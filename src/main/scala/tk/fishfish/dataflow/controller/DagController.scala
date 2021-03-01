@@ -19,8 +19,7 @@ class DagController {
 
   @PostMapping(Array("/run"))
   def run(@RequestBody graph: Graph): Unit = {
-    val dag = Dag(graph)
-    dagExecutor.run(dag)
+    dagExecutor.run(graph)
   }
 
 }

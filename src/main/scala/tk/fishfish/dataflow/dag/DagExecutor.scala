@@ -14,7 +14,7 @@ import tk.fishfish.dataflow.exception.DagException
  */
 trait DagExecutor {
 
-  def run(dag: Dag): Unit
+  def run(graph: Graph): Unit
 
 }
 
@@ -24,40 +24,44 @@ class DefaultDagExecutor(tasks: Seq[Task]) extends DagExecutor {
 
   private val taskMap: Map[String, Task] = tasks.map(x => (x.taskType(), x)).toMap
 
-  def run(dag: Dag): Unit = {
-    logger.debug("run starting")
-    var df: DataFrame = null
-    try {
-      while (!dag.isComplete) {
-        val nodes = dag.poll()
-        for (node <- nodes) {
-          taskMap.get(node.nodeType) match {
-            case Some(task) => task match {
-              case source: Source =>
-                df = source.read(node.conf)
-                df.persist(StorageLevel.MEMORY_AND_DISK)
-                val total = df.count()
-                logger.info("源端读取数据条数: {}", total)
-              case transformer: Transformer =>
-                df = transformer.transform(df, node.conf)
-              case filter: Filter =>
-                df = filter.filter(df, node.conf)
-              case target: Target =>
-                target.write(df, node.conf)
+  def run(graph: Graph): Unit = {
+    val paths = Dag.simplePaths(graph)
+    val map = graph.nodes.map { e => (e.id, e) }.toMap
+    for (flow <- paths) {
+      logger.info("flow: {}", flow.mkString(" -> "))
+      var df, sourceDF: DataFrame = null
+      try {
+        for (id <- flow) {
+          map.get(id) match {
+            case Some(node) => {
+              taskMap.get(node.nodeType) match {
+                case Some(task) => task match {
+                  case source: Source =>
+                    sourceDF = source.read(node.conf)
+                    sourceDF.persist(StorageLevel.MEMORY_AND_DISK)
+                    val total = sourceDF.count()
+                    logger.info("源端读取数据条数: {}", total)
+                    df = sourceDF
+                  case transformer: Transformer =>
+                    df = transformer.transform(df, node.conf)
+                  case filter: Filter =>
+                    df = filter.filter(df, node.conf)
+                  case target: Target =>
+                    target.write(df, node.conf)
+                }
+                case None => throw new DagException(s"节点不支持的类型: ${node.nodeType}")
+              }
             }
-            case None => throw new DagException(s"节点不支持的类型: ${node.nodeType}")
           }
-          dag.complete(node)
         }
-      }
-    } catch {
-      case e: Exception => {
-        logger.warn("run error", e)
-      }
-    } finally {
-      logger.debug("run finishing")
-      if (df != null) {
-        df.unpersist()
+      } catch {
+        case e: Exception => {
+          logger.warn("运行任务流失败", e)
+        }
+      } finally {
+        if (sourceDF != null) {
+          sourceDF.unpersist()
+        }
       }
     }
   }

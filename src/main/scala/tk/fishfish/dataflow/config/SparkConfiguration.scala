@@ -38,10 +38,10 @@ class SparkConfiguration {
 
   @Bean
   def tasks(spark: SparkSession): Seq[Task] = Seq(
-    new SqlSource(spark), new HttpSource(spark), new KafkaSource(spark), new DataXSource(spark),
+    new SqlSource(spark),
     new DefaultTransformer(spark),
     new SqlFilter(spark),
-    new LogTarget(spark), new SqlTarget(spark), new KafkaTarget(spark), new DataXTarget(spark),
+    new LogTarget(spark), new SqlTarget(spark),
   )
 
   @Bean

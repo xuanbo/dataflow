@@ -1,8 +1,7 @@
 package tk.fishfish.dataflow.core
 
 import org.apache.spark.sql.execution.datasources.jdbc.JDBCOptions
-import org.apache.spark.sql.types.{BooleanType, IntegerType, StringType, StructField, StructType}
-import org.apache.spark.sql.{DataFrame, Row, SparkSession}
+import org.apache.spark.sql.{DataFrame, SparkSession}
 import org.slf4j.{Logger, LoggerFactory}
 import tk.fishfish.dataflow.exception.FlowException
 
@@ -45,48 +44,5 @@ class SqlSource(val spark: SparkSession) extends Source {
       .option(JDBCOptions.JDBC_NUM_PARTITIONS, 10)
       .load()
   }
-
-}
-
-class HttpSource(val spark: SparkSession) extends Source {
-
-  override def taskType(): String = "HTTP_SOURCE"
-
-  override def read(conf: Conf): DataFrame = {
-    // TODO HTTP数据
-    val schema = StructType(
-      Seq(
-        StructField("name", StringType),
-        StructField("age", IntegerType),
-        StructField("sex", BooleanType),
-      )
-    )
-    val rdd = spark.sparkContext.makeRDD(
-      Seq(
-        Row("张三", 30, true),
-        Row("李四", 28, false),
-        Row("王五", 22, false),
-        Row("赵六", 23, false),
-        Row("朱七", 24, false),
-      )
-    )
-    spark.createDataFrame(rdd, schema)
-  }
-
-}
-
-class KafkaSource(val spark: SparkSession) extends Source {
-
-  override def taskType(): String = "KAFKA_SOURCE"
-
-  override def read(conf: Conf): DataFrame = null
-
-}
-
-class DataXSource(val spark: SparkSession) extends Source {
-
-  override def taskType(): String = "DATAX_SOURCE"
-
-  override def read(conf: Conf): DataFrame = null
 
 }
