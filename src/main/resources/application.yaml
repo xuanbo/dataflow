@@ -1,0 +1,6 @@
+server:
+  port: 9090
+
+spark:
+  appName: dataflow
+  master: local[4]
