@@ -49,7 +49,7 @@ class GraphPath(val graph: MutableGraph[String], val from: String, val to: Strin
   /**
    * 已访问过的节点
    */
-  private var visit = mutable.Set[String]()
+  private val visit = mutable.Set[String]()
 
   /**
    * 每条可能的路径

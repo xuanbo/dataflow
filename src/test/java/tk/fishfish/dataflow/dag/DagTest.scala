@@ -38,9 +38,9 @@ class DagTest {
       |            "conf":{
       |                "jdbc": {
       |                    "driver": "com.mysql.cj.jdbc.Driver",
-      |                    "url": "jdbc:mysql://egova.top:30010/test_cdb?useUnicode=true&characterEncoding=UTF-8",
+      |                    "url": "jdbc:mysql://127.0.0.1:3306/dataflow?useUnicode=true&characterEncoding=UTF-8",
       |                    "user": "root",
-      |                    "password": "egova",
+      |                    "password": "123456",
       |                    "table": "test"
       |                },
       |                "columns":[
@@ -101,9 +101,9 @@ class DagTest {
       |            "conf":{
       |                "jdbc": {
       |                    "driver": "com.mysql.cj.jdbc.Driver",
-      |                    "url": "jdbc:mysql://egova.top:30010/test_cdb?useUnicode=true&characterEncoding=UTF-8",
+      |                    "url": "jdbc:mysql://127.0.0.1:3306/dataflow?useUnicode=true&characterEncoding=UTF-8",
       |                    "user": "root",
-      |                    "password": "egova",
+      |                    "password": "123456",
       |                    "table": "test"
       |                },
       |                "columns":[
@@ -149,13 +149,13 @@ class DagTest {
       |        {
       |            "id":"4",
       |            "name":"写",
-      |            "nodeType":"LOG_TARGET",
+      |            "nodeType":"SQL_TARGET",
       |            "conf":{
       |                "jdbc": {
       |                    "driver": "com.mysql.cj.jdbc.Driver",
-      |                    "url": "jdbc:mysql://egova.top:30010/test_cdb?useUnicode=true&characterEncoding=UTF-8",
+      |                    "url": "jdbc:mysql://127.0.0.1:3306/dataflow?useUnicode=true&characterEncoding=UTF-8",
       |                    "user": "root",
-      |                    "password": "egova",
+      |                    "password": "123456",
       |                    "table": "test1"
       |                },
       |                "columns":[
@@ -178,57 +178,13 @@ class DagTest {
       |            "id":"5",
       |            "name":"写",
       |            "nodeType":"LOG_TARGET",
-      |            "conf":{
-      |                "jdbc": {
-      |                    "driver": "com.mysql.cj.jdbc.Driver",
-      |                    "url": "jdbc:mysql://egova.top:30010/test_cdb?useUnicode=true&characterEncoding=UTF-8",
-      |                    "user": "root",
-      |                    "password": "egova",
-      |                    "table": "test1"
-      |                },
-      |                "columns":[
-      |                    {
-      |                        "name":"id",
-      |                        "type":"INT"
-      |                    },
-      |                    {
-      |                        "name":"name1",
-      |                        "type":"STRING"
-      |                    },
-      |                    {
-      |                        "name":"age1",
-      |                        "type":"INT"
-      |                    }
-      |                ]
-      |            }
+      |            "conf":{}
       |        },
       |        {
       |            "id":"7",
       |            "name":"写",
       |            "nodeType":"LOG_TARGET",
-      |            "conf":{
-      |                "jdbc": {
-      |                    "driver": "com.mysql.cj.jdbc.Driver",
-      |                    "url": "jdbc:mysql://egova.top:30010/test_cdb?useUnicode=true&characterEncoding=UTF-8",
-      |                    "user": "root",
-      |                    "password": "egova",
-      |                    "table": "test1"
-      |                },
-      |                "columns":[
-      |                    {
-      |                        "name":"id",
-      |                        "type":"INT"
-      |                    },
-      |                    {
-      |                        "name":"name",
-      |                        "type":"STRING"
-      |                    },
-      |                    {
-      |                        "name":"age",
-      |                        "type":"INT"
-      |                    }
-      |                ]
-      |            }
+      |            "conf":{}
       |        }
       |    ],
       |    "edges":[

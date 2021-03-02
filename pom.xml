@@ -25,6 +25,7 @@
         <maven-compiler-plugin.version>3.8.0</maven-compiler-plugin.version>
         <maven-shade-plugin.version>3.2.4</maven-shade-plugin.version>
         <spring-boot.version>2.3.7.RELEASE</spring-boot.version>
+        <rest-spring-boot-starter.version>1.1.0.RELEASE</rest-spring-boot-starter.version>
         <scala.version>2.12.10</scala.version>
         <spark.version>3.0.1</spark.version>
         <guava.version>30.0-jre</guava.version>
@@ -71,6 +72,13 @@
             <scope>test</scope>
         </dependency>
 
+        <!-- 统一业务异常处理，统一返回格式包装 -->
+        <dependency>
+            <groupId>tk.fishfish</groupId>
+            <artifactId>rest-spring-boot-starter</artifactId>
+            <version>${rest-spring-boot-starter.version}</version>
+        </dependency>
+
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
@@ -91,11 +99,6 @@
         <dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.kafka</groupId>
-            <artifactId>kafka-clients</artifactId>
         </dependency>
     </dependencies>
 

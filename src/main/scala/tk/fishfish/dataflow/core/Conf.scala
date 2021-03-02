@@ -14,7 +14,7 @@ import javax.validation.constraints.NotBlank
  */
 @Validated
 @JsonInclude(JsonInclude.Include.NON_NULL)
-case class Conf(@NotBlank columns: Seq[Column], conditions: Seq[String], jdbc: Jdbc, kafka: Kafka)
+case class Conf(@NotBlank columns: Seq[Column], conditions: Seq[String], jdbc: Jdbc)
 
 @Validated
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -27,7 +27,3 @@ case class Transform(@NotNull @JsonProperty("type") transformType: String, @NotB
 @Validated
 @JsonInclude(JsonInclude.Include.NON_NULL)
 case class Jdbc(@NotBlank driver: String, @NotBlank url: String, @NotBlank user: String, @NotBlank password: String, @NotBlank table: String)
-
-@Validated
-@JsonInclude(JsonInclude.Include.NON_NULL)
-case class Kafka(@NotBlank brokers: String, @NotBlank topic: String, @NotBlank table: String)

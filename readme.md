@@ -1,6 +1,6 @@
 # dataflow
 
-> 基于 Spark 任务流
+> 基于 Spark 任务流执行平台
 
 ## 文档
 
@@ -11,6 +11,10 @@
 待完善
 
 ### 提交任务
+
+> 不支持多节点合并
+
+![dag](./docs/dag.png)
 
 ```text
 POST /v1/dag/run
@@ -24,9 +28,9 @@ POST /v1/dag/run
             "conf":{
                 "jdbc": {
                     "driver": "com.mysql.cj.jdbc.Driver",
-                    "url": "jdbc:mysql://egova.top:30010/test_cdb?useUnicode=true&characterEncoding=UTF-8",
+                    "url": "jdbc:mysql://127.0.0.1:3306/dataflow?useUnicode=true&characterEncoding=UTF-8",
                     "user": "root",
-                    "password": "egova",
+                    "password": "123456",
                     "table": "test"
                 },
                 "columns":[
@@ -87,9 +91,9 @@ POST /v1/dag/run
             "conf":{
                 "jdbc": {
                     "driver": "com.mysql.cj.jdbc.Driver",
-                    "url": "jdbc:mysql://egova.top:30010/test_cdb?useUnicode=true&characterEncoding=UTF-8",
+                    "url": "jdbc:mysql://127.0.0.1:3306/dataflow?useUnicode=true&characterEncoding=UTF-8",
                     "user": "root",
-                    "password": "egova",
+                    "password": "123456",
                     "table": "test"
                 },
                 "columns":[
@@ -135,13 +139,13 @@ POST /v1/dag/run
         {
             "id":"4",
             "name":"写",
-            "nodeType":"LOG_TARGET",
+            "nodeType":"SQL_TARGET",
             "conf":{
                 "jdbc": {
                     "driver": "com.mysql.cj.jdbc.Driver",
-                    "url": "jdbc:mysql://egova.top:30010/test_cdb?useUnicode=true&characterEncoding=UTF-8",
+                    "url": "jdbc:mysql://127.0.0.1:3306/dataflow?useUnicode=true&characterEncoding=UTF-8",
                     "user": "root",
-                    "password": "egova",
+                    "password": "123456",
                     "table": "test1"
                 },
                 "columns":[
@@ -164,57 +168,13 @@ POST /v1/dag/run
             "id":"5",
             "name":"写",
             "nodeType":"LOG_TARGET",
-            "conf":{
-                "jdbc": {
-                    "driver": "com.mysql.cj.jdbc.Driver",
-                    "url": "jdbc:mysql://egova.top:30010/test_cdb?useUnicode=true&characterEncoding=UTF-8",
-                    "user": "root",
-                    "password": "egova",
-                    "table": "test1"
-                },
-                "columns":[
-                    {
-                        "name":"id",
-                        "type":"INT"
-                    },
-                    {
-                        "name":"name1",
-                        "type":"STRING"
-                    },
-                    {
-                        "name":"age1",
-                        "type":"INT"
-                    }
-                ]
-            }
+            "conf":{}
         },
         {
             "id":"7",
             "name":"写",
             "nodeType":"LOG_TARGET",
-            "conf":{
-                "jdbc": {
-                    "driver": "com.mysql.cj.jdbc.Driver",
-                    "url": "jdbc:mysql://egova.top:30010/test_cdb?useUnicode=true&characterEncoding=UTF-8",
-                    "user": "root",
-                    "password": "egova",
-                    "table": "test1"
-                },
-                "columns":[
-                    {
-                        "name":"id",
-                        "type":"INT"
-                    },
-                    {
-                        "name":"name",
-                        "type":"STRING"
-                    },
-                    {
-                        "name":"age",
-                        "type":"INT"
-                    }
-                ]
-            }
+            "conf":{}
         }
     ],
     "edges":[
@@ -242,8 +202,15 @@ POST /v1/dag/run
 }
 ```
 
-如上的配置拆封成 Spark 任务提交：
+如上的配置拆分 3 个任务提交到 Spark 运行：
 
 - 1 -> 2 -> 5
 - 1 -> 2 -> 3 -> 4
 - 6 -> 7
+
+并会在运行时缓存节点：
+
+- 1
+- 2
+
+暂未做到更智能的只缓存节点：2
