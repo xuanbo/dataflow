@@ -46,3 +46,29 @@ class SqlSource(val spark: SparkSession) extends Source {
   }
 
 }
+
+class IoTSource(val spark: SparkSession) extends Source {
+
+  private val logger: Logger = LoggerFactory.getLogger(classOf[IoTSource])
+
+  override def taskType(): String = "IOT_SOURCE"
+
+  override def read(conf: Conf): DataFrame = {
+    if (conf.jdbc == null) {
+      throw new FlowException("配置[conf.jdbc]不能为空")
+    }
+    if (conf.columns == null || conf.columns.isEmpty) {
+      throw new FlowException("配置[conf.columns]不能为空")
+    }
+    val columns = conf.columns.map(_.name).mkString(", ")
+    val sql = s"SELECT $columns FROM ${conf.jdbc.table}"
+    logger.info("查询SQL: {}", sql)
+    spark.read.format("org.apache.iotdb.spark.db")
+      .option(JDBCOptions.JDBC_URL, conf.jdbc.url)
+      .option("user", conf.jdbc.user)
+      .option("password", conf.jdbc.password)
+      .option("sql", sql)
+      .load()
+  }
+
+}

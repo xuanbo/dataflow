@@ -28,7 +28,7 @@ class SparkConfiguration {
       .master(properties.master)
 
     val config = properties.config
-    import scala.collection.convert.ImplicitConversions.`map AsScala`
+    import scala.collection.JavaConversions.mapAsScalaMap
     for ((k, v) <- config) {
       builder.config(k, v)
     }
@@ -38,10 +38,10 @@ class SparkConfiguration {
 
   @Bean
   def tasks(spark: SparkSession): Seq[Task] = Seq(
-    new SqlSource(spark),
+    new SqlSource(spark), new IoTSource(spark),
     new DefaultTransformer(spark),
     new SqlFilter(spark),
-    new LogTarget(spark), new SqlTarget(spark),
+    new LogTarget(spark), new SqlTarget(spark)
   )
 
   @Bean

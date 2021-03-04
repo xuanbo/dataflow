@@ -2,6 +2,12 @@
 
 > 基于 Spark 任务流执行平台
 
+## 依赖
+
+- Scala 2.11.12
+- Spark 2.4.7
+- Spring Boot 2.3.7.RELEASE
+
 ## 文档
 
 待完善

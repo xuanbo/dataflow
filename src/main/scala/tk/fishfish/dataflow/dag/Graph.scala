@@ -74,7 +74,7 @@ class GraphPath(val graph: MutableGraph[String], val from: String, val to: Strin
       result = path.take(top).toSeq
       return
     }
-    import scala.collection.convert.ImplicitConversions.`set asScala`
+    import scala.collection.JavaConversions.asScalaSet
     for (node <- graph.nodes()) {
       // 没有访问过，且相邻
       if (!visit.contains(node) && graph.hasEdgeConnecting(pos, node)) {

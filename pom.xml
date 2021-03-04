@@ -26,17 +26,18 @@
         <maven-shade-plugin.version>3.2.4</maven-shade-plugin.version>
         <spring-boot.version>2.3.7.RELEASE</spring-boot.version>
         <rest-spring-boot-starter.version>1.1.0.RELEASE</rest-spring-boot-starter.version>
-        <scala.version>2.12.10</scala.version>
-        <spark.version>3.0.1</spark.version>
+        <scala.version>2.11.12</scala.version>
+        <spark.version>2.4.7</spark.version>
         <guava.version>30.0-jre</guava.version>
         <janino.version>3.0.8</janino.version>
+        <iotdb.version>0.10.0</iotdb.version>
     </properties>
 
     <dependencies>
         <!-- Spark -->
         <dependency>
             <groupId>org.apache.spark</groupId>
-            <artifactId>spark-sql_2.12</artifactId>
+            <artifactId>spark-sql_2.11</artifactId>
             <version>${spark.version}</version>
             <exclusions>
                 <exclusion>
@@ -99,6 +100,25 @@
         <dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.iotdb</groupId>
+            <artifactId>spark-iotdb-connector</artifactId>
+            <version>${iotdb.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.scala-lang</groupId>
+                    <artifactId>scala-library</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.hadoop</groupId>
+                    <artifactId>hadoop-client</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>ch.qos.logback</groupId>
+                    <artifactId>logback-classic</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
     </dependencies>
 
