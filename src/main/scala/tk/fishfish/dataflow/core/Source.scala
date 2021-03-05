@@ -5,6 +5,8 @@ import org.apache.spark.sql.{DataFrame, SparkSession}
 import org.slf4j.{Logger, LoggerFactory}
 import tk.fishfish.dataflow.exception.FlowException
 
+import scala.collection.mutable
+
 /**
  * 源端
  *
@@ -60,15 +62,20 @@ class IoTSource(val spark: SparkSession) extends Source {
     if (conf.columns == null || conf.columns.isEmpty) {
       throw new FlowException("配置[conf.columns]不能为空")
     }
-    val columns = conf.columns.map(_.name).mkString(", ")
-    val sql = s"SELECT $columns FROM ${conf.jdbc.table}"
+    val columns = conf.columns.map(_.name)
+    val sql = s"SELECT ${columns.mkString(", ")} FROM ${conf.jdbc.table}"
     logger.info("查询SQL: {}", sql)
+    var newColumns = mutable.Seq[String]("Time")
+    for (column <- columns) {
+      newColumns = newColumns :+ column
+    }
     spark.read.format("org.apache.iotdb.spark.db")
       .option(JDBCOptions.JDBC_URL, conf.jdbc.url)
       .option("user", conf.jdbc.user)
       .option("password", conf.jdbc.password)
       .option("sql", sql)
       .load()
+      .toDF(newColumns: _*)
   }
 
 }

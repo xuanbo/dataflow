@@ -2,6 +2,7 @@ package tk.fishfish.dataflow.core
 
 import org.apache.commons.lang3.StringUtils
 import org.apache.spark.sql.{DataFrame, SparkSession}
+import org.slf4j.{Logger, LoggerFactory}
 import tk.fishfish.dataflow.exception.FlowException
 
 /**
@@ -19,6 +20,8 @@ trait Transformer extends Task {
 }
 
 class DefaultTransformer(val spark: SparkSession) extends Transformer {
+
+  private val logger: Logger = LoggerFactory.getLogger(classOf[IoTSource])
 
   override def taskType(): String = "DEFAULT_TRANSFORMER"
 
@@ -56,6 +59,7 @@ class DefaultTransformer(val spark: SparkSession) extends Transformer {
         }
       }.filter(e => StringUtils.isNotBlank(e))
     if (seq.nonEmpty) {
+      logger.info("转换表达式: {}", seq.mkString(", "))
       return df.selectExpr(seq: _*)
     }
     df
