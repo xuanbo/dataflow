@@ -4,8 +4,12 @@ import org.apache.spark.sql.DataFrame
 import org.apache.spark.storage.StorageLevel
 import org.slf4j.{Logger, LoggerFactory}
 import tk.fishfish.dataflow.core.{Filter, Source, Target, Task, Transformer}
+import tk.fishfish.dataflow.entity.enums.ExecuteStatus
+import tk.fishfish.dataflow.entity.{Execution, Flow}
 import tk.fishfish.dataflow.exception.DagException
+import tk.fishfish.dataflow.service.{ExecutionService, FlowService}
 
+import java.util.Date
 import scala.collection.mutable
 
 /**
@@ -20,7 +24,8 @@ trait DagExecutor {
 
 }
 
-class DefaultDagExecutor(tasks: Seq[Task]) extends DagExecutor {
+class DefaultDagExecutor(tasks: Seq[Task], executionService: ExecutionService, flowService: FlowService)
+  extends DagExecutor {
 
   private val logger: Logger = LoggerFactory.getLogger(classOf[DefaultDagExecutor])
 
@@ -28,16 +33,28 @@ class DefaultDagExecutor(tasks: Seq[Task]) extends DagExecutor {
 
   def run(graph: Graph): Unit = {
     val paths = Dag.simplePaths(graph)
+    val execution = new Execution()
+    execution.setStatus(ExecuteStatus.RUNNING)
+    execution.setCreateTime(new Date())
+    executionService.insert(execution)
+    var executionStatus = ExecuteStatus.SUCCESS
     val map = graph.nodes.map { e => (e.id, e) }.toMap
     val needCacheNodes = analyseCacheNodes(paths)
     logger.info("需要缓存的节点: {}", needCacheNodes.mkString(", "))
     val nodeDF = mutable.Map[String, DataFrame]()
     val cacheNodes = mutable.Set[DataFrame]()
-    for (flow <- paths) {
-      logger.info("运行任务流: {}", flow.mkString(" -> "))
+    for (path <- paths) {
+      val flowPath = path.mkString(" -> ")
+      val flow = new Flow()
+      flow.setExecutionId(execution.getId)
+      flow.setPath(flowPath)
+      flow.setStatus(ExecuteStatus.RUNNING)
+      flow.setCreateTime(new Date())
+      flowService.insert(flow)
+      logger.info("运行任务流: {}", flowPath)
       var df: DataFrame = null
       try {
-        for (id <- flow) {
+        for (id <- path) {
           nodeDF.get(id) match {
             case Some(tmpDF) => df = tmpDF
             case None => {
@@ -67,15 +84,24 @@ class DefaultDagExecutor(tasks: Seq[Task]) extends DagExecutor {
             cacheNodes += df
           }
         }
+        flow.setStatus(ExecuteStatus.SUCCESS)
       } catch {
         case e: Exception => {
           logger.warn("运行任务流失败", e)
+          executionStatus = ExecuteStatus.ERROR
+          flow.setStatus(executionStatus)
+          flow.setMessage(e.getMessage)
         }
       } finally {
         // 清理缓存
         cacheNodes.foreach(_.unpersist())
+        flow.setUpdateTime(new Date())
+        flowService.update(flow)
       }
     }
+    execution.setStatus(executionStatus)
+    execution.setUpdateTime(new Date())
+    executionService.update(execution)
   }
 
   private[this] def analyseCacheNodes(paths: Seq[Seq[String]]): Set[String] = {

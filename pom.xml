@@ -15,6 +15,10 @@
             <name>aliyun maven</name>
             <url>http://maven.aliyun.com/nexus/content/groups/public/</url>
         </repository>
+        <repository>
+            <id>github</id>
+            <url>https://maven.pkg.github.com/xuanbo/spring-boot-starter</url>
+        </repository>
     </repositories>
 
     <properties>
@@ -25,7 +29,8 @@
         <maven-compiler-plugin.version>3.8.0</maven-compiler-plugin.version>
         <maven-shade-plugin.version>3.2.4</maven-shade-plugin.version>
         <spring-boot.version>2.3.7.RELEASE</spring-boot.version>
-        <rest-spring-boot-starter.version>1.1.0.RELEASE</rest-spring-boot-starter.version>
+        <rest-spring-boot-starter.version>1.5.0-SNAPSHOT</rest-spring-boot-starter.version>
+        <mybatis-spring-boot-starter.version>1.5.0-SNAPSHOT</mybatis-spring-boot-starter.version>
         <scala.version>2.11.12</scala.version>
         <spark.version>2.4.7</spark.version>
         <guava.version>30.0-jre</guava.version>
@@ -78,6 +83,12 @@
             <groupId>tk.fishfish</groupId>
             <artifactId>rest-spring-boot-starter</artifactId>
             <version>${rest-spring-boot-starter.version}</version>
+        </dependency>
+        <!-- mybatis操作 -->
+        <dependency>
+            <groupId>tk.fishfish</groupId>
+            <artifactId>mybatis-spring-boot-starter</artifactId>
+            <version>${mybatis-spring-boot-starter.version}</version>
         </dependency>
 
         <dependency>

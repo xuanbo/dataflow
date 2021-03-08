@@ -6,6 +6,7 @@ import org.springframework.context.annotation.{Bean, Configuration}
 import org.springframework.validation.annotation.Validated
 import tk.fishfish.dataflow.core._
 import tk.fishfish.dataflow.dag.{DagExecutor, DefaultDagExecutor}
+import tk.fishfish.dataflow.service.{ExecutionService, FlowService}
 
 import java.util.Collections
 import javax.validation.constraints.NotBlank
@@ -45,8 +46,8 @@ class SparkConfiguration {
   )
 
   @Bean
-  def dagExecutor(tasks: Seq[Task]): DagExecutor = new DefaultDagExecutor(tasks)
-
+  def dagExecutor(tasks: Seq[Task], executionService: ExecutionService, flowService: FlowService): DagExecutor =
+    new DefaultDagExecutor(tasks, executionService, flowService)
 }
 
 @Validated
