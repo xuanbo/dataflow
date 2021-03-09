@@ -34,10 +34,7 @@ class SqlTarget(val spark: SparkSession) extends Target {
 
   override def write(df: DataFrame, conf: Conf): Unit = {
     if (conf.jdbc == null) {
-      throw new FlowException("配置[conf.jdbc]不能为空")
-    }
-    if (conf.columns == null) {
-      throw new FlowException("配置[conf.columns]不能为空")
+      throw new FlowException("配置 [conf.jdbc] 不能为空")
     }
     df.write.format("jdbc")
       .option("driver", conf.jdbc.driver)

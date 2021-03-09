@@ -29,10 +29,10 @@ class SqlSource(val spark: SparkSession) extends Source {
 
   override def read(conf: Conf): DataFrame = {
     if (conf.jdbc == null) {
-      throw new FlowException("配置[conf.jdbc]不能为空")
+      throw new FlowException("配置 [conf.jdbc] 不能为空")
     }
     if (conf.columns == null || conf.columns.isEmpty) {
-      throw new FlowException("配置[conf.columns]不能为空")
+      throw new FlowException("配置 [conf.columns] 不能为空")
     }
     val columns = conf.columns.map(_.name).mkString(", ")
     val sql = s"SELECT $columns FROM ${conf.jdbc.table}"
@@ -57,10 +57,10 @@ class IoTSource(val spark: SparkSession) extends Source {
 
   override def read(conf: Conf): DataFrame = {
     if (conf.jdbc == null) {
-      throw new FlowException("配置[conf.jdbc]不能为空")
+      throw new FlowException("配置 [conf.jdbc] 不能为空")
     }
     if (conf.columns == null || conf.columns.isEmpty) {
-      throw new FlowException("配置[conf.columns]不能为空")
+      throw new FlowException("配置 [conf.columns] 不能为空")
     }
     val columns = conf.columns.map(_.name)
     val sql = s"SELECT ${columns.mkString(", ")} FROM ${conf.jdbc.table}"

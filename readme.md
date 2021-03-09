@@ -8,9 +8,215 @@
 - Spark 2.4.7
 - Spring Boot 2.3.7.RELEASE
 
-## 文档
+## 节点类型
 
-待完善
+### Source
+
+源端
+
+- SQL_SOURCE
+
+    通用 JDBC 读取
+     
+    ```json5
+    {
+        "id":"NODE_ID",
+        "name":"节点名称",
+        // 节点类型
+        "nodeType":"SQL_SOURCE",
+        "conf":{
+            "jdbc": {
+                "driver": "com.mysql.cj.jdbc.Driver",
+                "url": "jdbc:mysql://127.0.0.1:3306/dataflow?useUnicode=true&characterEncoding=UTF-8",
+                "user": "root",
+                "password": "123456",
+                // 读取表
+                "table": "test"
+            },
+            // 表字段
+            "columns":[
+                {
+                    "name":"id",
+                    // 类型暂未使用
+                    "type":"INT"
+                },
+                {
+                    "name":"name",
+                    "type":"STRING"
+                },
+                {
+                    "name":"age",
+                    "type":"INT"
+                }
+            ]
+        }
+    }
+    ```
+
+- IOT_SOURCE
+
+    IoTDB 读取
+    
+    ```json5
+    {
+        "id":"NODE_ID",
+        "name":"节点名称",
+        // 节点类型
+        "nodeType":"IOT_SOURCE",
+        "conf":{
+            "jdbc": {
+                "url": "jdbc:iotdb://127.0.0.1:6667/",
+                "user": "root",
+                "password": "123456",
+                // 读取表
+                "table": "root.test"
+            },
+            // 表字段
+            "columns":[
+                {
+                    "name":"id",
+                    // 类型暂未使用
+                    "type":"INT"
+                },
+                {
+                    "name":"name",
+                    "type":"STRING"
+                },
+                {
+                    "name":"age",
+                    "type":"INT"
+                }
+            ]
+        }
+    }
+    ```
+
+### Transformer
+
+转换
+
+- DEFAULT_TRANSFORMER
+
+    ```json5
+    {
+        "id":"NODE_ID",
+        "name":"节点名称",
+        // 节点类型
+        "nodeType":"DEFAULT_TRANSFORMER",
+        "conf":{
+            "columns":[
+                {
+                    "name":"id",
+                    "type":"INT",
+                    // 转换函数，这里不处理
+                    "transforms":[
+                    ]
+                },
+                {
+                    "name":"name",
+                    "type":"STRING",
+                    // 转换函数，重命名字段
+                    "transforms":[
+                        {
+                            "type":"RENAME",
+                            "value":"NAME"
+                        }
+                    ]
+                },
+                {
+                    "name":"age",
+                    "type":"INT",
+                    // 转换函数，执行 SQL 函数（Spark SQL）
+                    "transforms": [
+                        {
+                            "type": "FUNC",
+                            "value": "IFNULL(age, 0)"
+                        },
+                            {
+                            "type": "RENAME",
+                            "value": "age"
+                            }
+                    ]
+                }
+            ]
+        }
+    }
+    ```
+
+### Filter
+
+过滤
+
+- SQL_FILTER
+
+    ```json5
+    {
+        "id":"NODE_ID",
+        "name":"节点名称",
+        // 节点类型
+        "nodeType":"SQL_FILTER",
+        "conf":{
+            // 过滤条件（SQL）
+            "conditions": [
+                "age >= 25"
+            ],
+            "columns":[
+                {
+                    "name":"id",
+                    "type":"INT"
+                },
+                {
+                    "name":"name",
+                    "type":"STRING"
+                },
+                {
+                    "name":"age",
+                    "type":"INT"
+                }
+            ]
+        }
+    }
+    ```
+
+### Target
+
+目标端
+
+- SQL_TARGET
+
+    通用 JDBC 写入
+    
+    ```json5
+    {
+        "id":"NODE_ID",
+        "name":"节点名称",
+        // 节点类型
+        "nodeType":"SQL_TARGET",
+          "conf": {
+            "jdbc": {
+              "driver": "com.mysql.cj.jdbc.Driver",
+              "url": "jdbc:mysql://127.0.0.1:3306/dataflow?useUnicode=true&characterEncoding=UTF-8",
+              "user": "root",
+              "password": "123456",
+              // 写入表名
+              "table": "test1"
+            }
+          }
+    }
+    ```
+
+- LOG_TARGET
+
+    输出结果，方便调试
+    
+    ```json5
+    {
+        "id":"NODE_ID",
+        "name":"节点名称",
+        // 节点类型
+        "nodeType":"LOG_TARGET"
+    }
+    ```
 
 ## API
 
