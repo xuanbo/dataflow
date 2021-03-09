@@ -20,7 +20,7 @@ import scala.collection.mutable
  */
 trait DagExecutor {
 
-  def run(graph: Graph): Unit
+  def run(graphId: String, graph: Graph): Unit
 
 }
 
@@ -31,9 +31,10 @@ class DefaultDagExecutor(tasks: Seq[Task], executionService: ExecutionService, f
 
   private val taskMap: Map[String, Task] = tasks.map(x => (x.taskType(), x)).toMap
 
-  def run(graph: Graph): Unit = {
+  def run(graphId: String, graph: Graph): Unit = {
     val paths = Dag.simplePaths(graph)
     val execution = new Execution()
+    execution.setGraphId(graphId)
     execution.setStatus(ExecuteStatus.RUNNING)
     execution.setCreateTime(new Date())
     executionService.insert(execution)
@@ -88,9 +89,9 @@ class DefaultDagExecutor(tasks: Seq[Task], executionService: ExecutionService, f
       } catch {
         case e: Exception => {
           logger.warn("运行任务流失败", e)
-          executionStatus = ExecuteStatus.ERROR
-          flow.setStatus(executionStatus)
+          flow.setStatus(ExecuteStatus.ERROR)
           flow.setMessage(e.getMessage)
+          executionStatus = ExecuteStatus.ERROR
         }
       } finally {
         // 清理缓存

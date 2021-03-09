@@ -19,7 +19,7 @@ class DagController {
 
   @PostMapping(Array("/run"))
   def run(@RequestBody graph: Graph): Unit = {
-    dagExecutor.run(graph)
+    dagExecutor.run("test", graph)
   }
 
 }

@@ -1,0 +1,60 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+
+    <changeSet author="wxb" id="20210309-1">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="df_graph"/>
+            </not>
+        </preConditions>
+        <createTable tableName="df_graph" remarks="流程图">
+            <column name="id" type="VARCHAR(50)" remarks="主键">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="name" type="VARCHAR(50)" remarks="名称"/>
+            <column name="description" type="VARCHAR(80)" remarks="描述"/>
+            <column name="content" type="TEXT" remarks="流程图内容"/>
+            <column name="create_time" type="datetime(3)" remarks="创建时间"/>
+            <column name="update_time" type="datetime(3)" remarks="修改时间"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet author="wxb" id="20210309-2">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="df_execution"/>
+            </not>
+        </preConditions>
+        <createTable tableName="df_execution" remarks="执行">
+            <column name="id" type="VARCHAR(50)" remarks="主键">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="graph_id" type="VARCHAR(50)" remarks="流程图ID"/>
+            <column name="status" type="VARCHAR(1)" remarks="执行状态"/>
+            <column name="create_time" type="datetime(3)" remarks="创建时间"/>
+            <column name="update_time" type="datetime(3)" remarks="修改时间"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet author="wxb" id="20210309-3">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="df_flow"/>
+            </not>
+        </preConditions>
+        <createTable tableName="df_flow" remarks="执行流">
+            <column name="id" type="VARCHAR(50)" remarks="主键">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="execution_id" type="VARCHAR(50)" remarks="执行ID"/>
+            <column name="path" type="VARCHAR(1000)" remarks="执行路径"/>
+            <column name="status" type="VARCHAR(1)" remarks="执行状态"/>
+            <column name="message" type="TEXT" remarks="内容"/>
+            <column name="create_time" type="datetime(3)" remarks="创建时间"/>
+            <column name="update_time" type="datetime(3)" remarks="修改时间"/>
+        </createTable>
+    </changeSet>
+
+</databaseChangeLog>

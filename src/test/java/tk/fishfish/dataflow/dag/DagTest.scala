@@ -216,7 +216,7 @@ class DagTest {
   def run(): Unit = {
     val graph = objectMapper.readValue(json, classOf[Graph])
     logger.info("graph: {}", graph)
-    dagExecutor.run(graph)
+    dagExecutor.run("test", graph)
   }
 
   @Test

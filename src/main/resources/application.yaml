@@ -11,6 +11,9 @@ spring:
     url: jdbc:mysql://localhost:3306/dataflow?serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=utf8
     username: root
     password: 123456
+  liquibase:
+    enabled: true
+    change-log: classpath:db/changelog/master.xml
 
 mybatis:
   # mapper的xml位置

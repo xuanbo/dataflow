@@ -1,5 +1,7 @@
 package tk.fishfish.dataflow.entity;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import org.springframework.format.annotation.DateTimeFormat;
 import tk.fishfish.dataflow.entity.enums.ExecuteStatus;
 import tk.fishfish.mybatis.entity.Entity;
 
@@ -25,8 +27,12 @@ public class Flow extends Entity {
 
     private String message;
 
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private Date createTime;
 
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private Date updateTime;
 
     public String getExecutionId() {

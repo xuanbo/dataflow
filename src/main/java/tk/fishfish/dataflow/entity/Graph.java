@@ -2,26 +2,25 @@ package tk.fishfish.dataflow.entity;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import org.springframework.format.annotation.DateTimeFormat;
-import tk.fishfish.dataflow.entity.enums.ExecuteStatus;
 import tk.fishfish.mybatis.entity.Entity;
 
-import javax.persistence.Column;
 import javax.persistence.Table;
 import java.util.Date;
 
 /**
- * 执行
+ * 流程图
  *
  * @author 奔波儿灞
  * @version 1.0.0
  */
-@Table(name = "df_execution")
-public class Execution extends Entity {
+@Table(name = "df_graph")
+public class Graph extends Entity {
 
-    private String graphId;
+    private String name;
 
-    @Column(name = "status")
-    private ExecuteStatus status;
+    private String description;
+
+    private String content;
 
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
@@ -31,20 +30,28 @@ public class Execution extends Entity {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private Date updateTime;
 
-    public String getGraphId() {
-        return graphId;
+    public String getName() {
+        return name;
     }
 
-    public void setGraphId(String graphId) {
-        this.graphId = graphId;
+    public void setName(String name) {
+        this.name = name;
     }
 
-    public ExecuteStatus getStatus() {
-        return status;
+    public String getDescription() {
+        return description;
     }
 
-    public void setStatus(ExecuteStatus status) {
-        this.status = status;
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public String getContent() {
+        return content;
+    }
+
+    public void setContent(String content) {
+        this.content = content;
     }
 
     public Date getCreateTime() {

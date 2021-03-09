@@ -2,6 +2,7 @@ package tk.fishfish.dataflow
 
 import org.springframework.boot.SpringApplication
 import org.springframework.boot.autoconfigure.SpringBootApplication
+import org.springframework.scheduling.annotation.EnableAsync
 import tk.fishfish.mybatis.enums.EnableEnumTypes
 
 /**
@@ -10,6 +11,7 @@ import tk.fishfish.mybatis.enums.EnableEnumTypes
  * @author 奔波儿灞
  * @version 1.0.0
  */
+@EnableAsync
 @EnableEnumTypes
 @SpringBootApplication
 class Bootstrap {

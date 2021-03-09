@@ -31,6 +31,7 @@
         <spring-boot.version>2.3.7.RELEASE</spring-boot.version>
         <rest-spring-boot-starter.version>1.5.0-SNAPSHOT</rest-spring-boot-starter.version>
         <mybatis-spring-boot-starter.version>1.5.0-SNAPSHOT</mybatis-spring-boot-starter.version>
+        <json-spring-boot-starter.version>1.5.0-SNAPSHOT</json-spring-boot-starter.version>
         <scala.version>2.11.12</scala.version>
         <spark.version>2.4.7</spark.version>
         <guava.version>30.0-jre</guava.version>
@@ -90,6 +91,12 @@
             <artifactId>mybatis-spring-boot-starter</artifactId>
             <version>${mybatis-spring-boot-starter.version}</version>
         </dependency>
+        <!-- json操作 -->
+        <dependency>
+            <groupId>tk.fishfish</groupId>
+            <artifactId>json-spring-boot-starter</artifactId>
+            <version>${json-spring-boot-starter.version}</version>
+        </dependency>
 
         <dependency>
             <groupId>org.projectlombok</groupId>
@@ -130,6 +137,11 @@
                     <artifactId>logback-classic</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.liquibase</groupId>
+            <artifactId>liquibase-core</artifactId>
         </dependency>
     </dependencies>
 
