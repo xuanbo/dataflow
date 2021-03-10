@@ -33,11 +33,7 @@ class DefaultDagExecutor(tasks: Seq[Task], executionService: ExecutionService, f
 
   def run(graphId: String, graph: Graph): Unit = {
     val paths = Dag.simplePaths(graph)
-    val execution = new Execution()
-    execution.setGraphId(graphId)
-    execution.setStatus(ExecuteStatus.RUNNING)
-    execution.setCreateTime(new Date())
-    executionService.insert(execution)
+    val execution = startExecution(graphId)
     var executionStatus = ExecuteStatus.SUCCESS
     val map = graph.nodes.map { e => (e.id, e) }.toMap
     val needCacheNodes = analyseCacheNodes(paths)
@@ -46,13 +42,8 @@ class DefaultDagExecutor(tasks: Seq[Task], executionService: ExecutionService, f
     val cacheNodes = mutable.Set[DataFrame]()
     for (path <- paths) {
       val flowPath = path.mkString(" -> ")
-      val flow = new Flow()
-      flow.setExecutionId(execution.getId)
-      flow.setPath(flowPath)
-      flow.setStatus(ExecuteStatus.RUNNING)
-      flow.setCreateTime(new Date())
-      flowService.insert(flow)
       logger.info("运行任务流: {}", flowPath)
+      val flow = startFlow(execution.getId, flowPath)
       var df: DataFrame = null
       try {
         for (id <- path) {
@@ -96,13 +87,11 @@ class DefaultDagExecutor(tasks: Seq[Task], executionService: ExecutionService, f
       } finally {
         // 清理缓存
         cacheNodes.foreach(_.unpersist())
-        flow.setUpdateTime(new Date())
-        flowService.update(flow)
+        endFlow(flow)
       }
     }
     execution.setStatus(executionStatus)
-    execution.setUpdateTime(new Date())
-    executionService.update(execution)
+    endExecution(execution)
   }
 
   private[this] def analyseCacheNodes(paths: Seq[Seq[String]]): Set[String] = {
@@ -117,6 +106,35 @@ class DefaultDagExecutor(tasks: Seq[Task], executionService: ExecutionService, f
       }
     }
     cacheNodes.toSet
+  }
+
+  private[this] def startExecution(graphId: String): Execution = {
+    val execution = new Execution()
+    execution.setGraphId(graphId)
+    execution.setStatus(ExecuteStatus.RUNNING)
+    execution.setCreateTime(new Date())
+    executionService.insert(execution)
+    execution
+  }
+
+  private[this] def endExecution(execution: Execution): Unit = {
+    execution.setUpdateTime(new Date())
+    executionService.update(execution)
+  }
+
+  private[this] def startFlow(executionId: String, flowPath: String): Flow = {
+    val flow = new Flow()
+    flow.setExecutionId(executionId)
+    flow.setPath(flowPath)
+    flow.setStatus(ExecuteStatus.RUNNING)
+    flow.setCreateTime(new Date())
+    flowService.insert(flow)
+    flow
+  }
+
+  private[this] def endFlow(flow: Flow): Unit = {
+    flow.setUpdateTime(new Date())
+    flowService.update(flow)
   }
 
 }

@@ -15,12 +15,5 @@ trait Task extends Serializable {
    */
   def taskType(): String
 
-  /**
-   * 支持后继节点类型
-   *
-   * @return
-   */
-  def supportNext(): Seq[Class[_]]
-
 }
 

@@ -2,6 +2,7 @@ package tk.fishfish.dataflow.dag
 
 import com.google.common.graph.{GraphBuilder, Graphs, MutableGraph}
 import tk.fishfish.dataflow.exception.DagException
+import tk.fishfish.dataflow.util.CollectionUtils
 
 import scala.collection.mutable
 
@@ -41,10 +42,10 @@ object Dag {
       }
       if (g.degree(node.id) != 0) {
         // 后继
-        if (isEmpty(predecessors) && !isEmpty(successors)) {
+        if (CollectionUtils.isEmpty(predecessors) && CollectionUtils.isNotEmpty(successors)) {
           starts = starts :+ node.id
         }
-        if (!isEmpty(predecessors) && isEmpty(successors)) {
+        if (CollectionUtils.isNotEmpty(predecessors) && CollectionUtils.isEmpty(successors)) {
           ends = ends :+ node.id
         }
       }
@@ -61,7 +62,5 @@ object Dag {
     }
     paths
   }
-
-  def isEmpty(collection: java.util.Set[_]): Boolean = collection == null || collection.isEmpty
 
 }

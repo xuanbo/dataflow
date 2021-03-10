@@ -3,7 +3,7 @@ package tk.fishfish.dataflow.core
 import org.apache.spark.sql.execution.datasources.jdbc.JDBCOptions
 import org.apache.spark.sql.{DataFrame, SparkSession}
 import org.slf4j.{Logger, LoggerFactory}
-import tk.fishfish.dataflow.exception.FlowException
+import tk.fishfish.dataflow.util.{StringUtils, Validation}
 
 import scala.collection.mutable
 
@@ -14,8 +14,6 @@ import scala.collection.mutable
  * @version 1.0.0
  */
 trait Source extends Task {
-
-  def supportNext(): Seq[Class[_]] = Seq(classOf[Transformer], classOf[Filter], classOf[Target])
 
   def read(conf: Conf): DataFrame
 
@@ -28,14 +26,20 @@ class SqlSource(val spark: SparkSession) extends Source {
   override def taskType(): String = "SQL_SOURCE"
 
   override def read(conf: Conf): DataFrame = {
-    if (conf.jdbc == null) {
-      throw new FlowException("配置 [conf.jdbc] 不能为空")
+    Validation.notNull(conf.jdbc, "配置 [conf.jdbc] 不能为空")
+    Validation.notEmpty(conf.jdbc.driver, "配置 [conf.jdbc.driver] 不能为空")
+    Validation.notEmpty(conf.jdbc.url, "配置 [conf.jdbc.url] 不能为空")
+    var sql = ""
+    if (StringUtils.isNotEmpty(conf.jdbc.sql)) {
+      // 自定义SQL
+      sql = conf.jdbc.sql
+    } else {
+      // 查询表
+      Validation.notEmpty(conf.jdbc.table, "配置 [conf.jdbc.table] 不能为空")
+      Validation.notEmpty(conf.columns, "配置 [conf.columns] 不能为空")
+      val columns = conf.columns.map(_.name).mkString(", ")
+      sql = s"SELECT $columns FROM ${conf.jdbc.table}"
     }
-    if (conf.columns == null || conf.columns.isEmpty) {
-      throw new FlowException("配置 [conf.columns] 不能为空")
-    }
-    val columns = conf.columns.map(_.name).mkString(", ")
-    val sql = s"SELECT $columns FROM ${conf.jdbc.table}"
     logger.info("查询SQL: {}", sql)
     spark.read.format("jdbc")
       .option("driver", conf.jdbc.driver)
@@ -56,12 +60,10 @@ class IoTSource(val spark: SparkSession) extends Source {
   override def taskType(): String = "IOT_SOURCE"
 
   override def read(conf: Conf): DataFrame = {
-    if (conf.jdbc == null) {
-      throw new FlowException("配置 [conf.jdbc] 不能为空")
-    }
-    if (conf.columns == null || conf.columns.isEmpty) {
-      throw new FlowException("配置 [conf.columns] 不能为空")
-    }
+    Validation.notNull(conf.jdbc, "配置 [conf.jdbc] 不能为空")
+    Validation.notEmpty(conf.jdbc.table, "配置 [conf.jdbc.table] 不能为空")
+    Validation.notEmpty(conf.jdbc.url, "配置 [conf.jdbc.url] 不能为空")
+    Validation.notEmpty(conf.columns, "配置 [conf.columns] 不能为空")
     val columns = conf.columns.map(_.name)
     val sql = s"SELECT ${columns.mkString(", ")} FROM ${conf.jdbc.table}"
     logger.info("查询SQL: {}", sql)
