@@ -16,7 +16,7 @@ import java.util.Date;
 @Data
 public class GraphCondition {
 
-    @Like(property = "name", policy = Like.Policy.LEFT)
+    @Like(property = "name", policy = Like.Policy.ALL)
     private String name;
 
     @Gte(property = "createTime")

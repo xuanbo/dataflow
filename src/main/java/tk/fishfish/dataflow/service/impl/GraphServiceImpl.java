@@ -9,6 +9,8 @@ import tk.fishfish.dataflow.service.GraphService;
 import tk.fishfish.json.Json;
 import tk.fishfish.mybatis.service.impl.BaseServiceImpl;
 
+import java.util.Date;
+
 /**
  * 流程图
  *
@@ -32,6 +34,20 @@ public class GraphServiceImpl extends BaseServiceImpl<Graph> implements GraphSer
             return;
         }
         dagExecutor.run(id, json.read(graph.getContent(), tk.fishfish.dataflow.dag.Graph.class));
+    }
+
+    @Override
+    protected void beforeInsert(Graph graph) {
+        if (graph.getCreateTime() == null) {
+            graph.setCreateTime(new Date());
+        }
+    }
+
+    @Override
+    protected void beforeUpdate(Graph graph) {
+        if (graph.getUpdateTime() == null) {
+            graph.setUpdateTime(new Date());
+        }
     }
 
 }

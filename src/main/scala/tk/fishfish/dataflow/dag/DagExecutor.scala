@@ -9,7 +9,6 @@ import tk.fishfish.dataflow.entity.{Execution, Flow}
 import tk.fishfish.dataflow.exception.DagException
 import tk.fishfish.dataflow.service.{ExecutionService, FlowService}
 
-import java.util.Date
 import scala.collection.mutable
 
 /**
@@ -62,6 +61,7 @@ class DefaultDagExecutor(tasks: Seq[Task], executionService: ExecutionService, f
                     case None => throw new DagException(s"节点不支持的类型: ${node.nodeType}")
                   }
                 }
+                case None => // nothing
               }
               nodeDF += (id -> df)
             }
@@ -112,29 +112,21 @@ class DefaultDagExecutor(tasks: Seq[Task], executionService: ExecutionService, f
     val execution = new Execution()
     execution.setGraphId(graphId)
     execution.setStatus(ExecuteStatus.RUNNING)
-    execution.setCreateTime(new Date())
     executionService.insert(execution)
     execution
   }
 
-  private[this] def endExecution(execution: Execution): Unit = {
-    execution.setUpdateTime(new Date())
-    executionService.update(execution)
-  }
+  private[this] def endExecution(execution: Execution): Unit = executionService.update(execution)
 
   private[this] def startFlow(executionId: String, flowPath: String): Flow = {
     val flow = new Flow()
     flow.setExecutionId(executionId)
     flow.setPath(flowPath)
     flow.setStatus(ExecuteStatus.RUNNING)
-    flow.setCreateTime(new Date())
     flowService.insert(flow)
     flow
   }
 
-  private[this] def endFlow(flow: Flow): Unit = {
-    flow.setUpdateTime(new Date())
-    flowService.update(flow)
-  }
+  private[this] def endFlow(flow: Flow): Unit = flowService.update(flow)
 
 }

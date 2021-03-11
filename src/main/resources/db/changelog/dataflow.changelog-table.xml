@@ -57,4 +57,27 @@
         </createTable>
     </changeSet>
 
+    <changeSet author="wxb" id="20210310-1">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="df_database"/>
+            </not>
+        </preConditions>
+        <createTable tableName="df_database" remarks="数据库">
+            <column name="id" type="VARCHAR(50)" remarks="主键">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="name" type="VARCHAR(50)" remarks="名称"/>
+            <column name="description" type="VARCHAR(80)" remarks="描述"/>
+            <column name="type" type="VARCHAR(1)" remarks="驱动类型"/>
+            <column name="url" type="VARCHAR(500)" remarks="连接信息"/>
+            <column name="user" type="VARCHAR(50)" remarks="用户名"/>
+            <column name="password" type="VARCHAR(50)" remarks="密码"/>
+            <column name="default_catalog" type="VARCHAR(50)" remarks="默认catalog"/>
+            <column name="default_schema" type="VARCHAR(50)" remarks="默认schema"/>
+            <column name="create_time" type="datetime(3)" remarks="创建时间"/>
+            <column name="update_time" type="datetime(3)" remarks="修改时间"/>
+        </createTable>
+    </changeSet>
+
 </databaseChangeLog>

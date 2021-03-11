@@ -30,11 +30,9 @@ class SqlTarget(val spark: SparkSession) extends Target {
 
   override def write(df: DataFrame, conf: Conf): Unit = {
     Validation.notNull(conf.jdbc, "配置 [conf.jdbc] 不能为空")
-    Validation.notEmpty(conf.jdbc.driver, "配置 [conf.jdbc.driver] 不能为空")
     Validation.notEmpty(conf.jdbc.url, "配置 [conf.jdbc.url] 不能为空")
     Validation.notEmpty(conf.jdbc.table, "配置 [conf.jdbc.table] 不能为空")
     df.write.format("jdbc")
-      .option("driver", conf.jdbc.driver)
       .option(JDBCOptions.JDBC_URL, conf.jdbc.url)
       .option("user", conf.jdbc.user)
       .option("password", conf.jdbc.password)

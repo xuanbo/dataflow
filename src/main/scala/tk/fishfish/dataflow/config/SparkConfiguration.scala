@@ -6,7 +6,7 @@ import org.springframework.context.annotation.{Bean, Configuration}
 import org.springframework.validation.annotation.Validated
 import tk.fishfish.dataflow.core._
 import tk.fishfish.dataflow.dag.{DagExecutor, DefaultDagExecutor}
-import tk.fishfish.dataflow.service.{ExecutionService, FlowService}
+import tk.fishfish.dataflow.service.{DatabaseService, ExecutionService, FlowService}
 
 import java.util.Collections
 import javax.validation.constraints.NotBlank
@@ -38,8 +38,8 @@ class SparkConfiguration {
   }
 
   @Bean
-  def tasks(spark: SparkSession): Seq[Task] = Seq(
-    new SqlSource(spark), new IoTSource(spark),
+  def tasks(spark: SparkSession, databaseService: DatabaseService): Seq[Task] = Seq(
+    new SqlSource(spark, databaseService), new IoTSource(spark, databaseService),
     new DefaultTransformer(spark),
     new SqlFilter(spark),
     new LogTarget(spark), new SqlTarget(spark)

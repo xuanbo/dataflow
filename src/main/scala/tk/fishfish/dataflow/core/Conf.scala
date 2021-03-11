@@ -9,13 +9,60 @@ import com.fasterxml.jackson.annotation.{JsonInclude, JsonProperty}
  * @version 1.0.0
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
-case class Conf(columns: Seq[Column], conditions: Seq[String], jdbc: Jdbc)
+class Conf {
+
+  var columns: Seq[Column] = _
+
+  var conditions: Seq[String] = _
+
+  var jdbc: Jdbc = _
+
+}
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-case class Column(name: String, @JsonProperty("type") columnType: String, transforms: Seq[Transform])
+class Column {
+
+  var name: String = _
+
+  @JsonProperty("type")
+  var columnType: String = _
+
+  var transforms: Seq[Transform] = _
+
+}
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-case class Transform(@JsonProperty("type") transformType: String, value: String)
+class Transform {
+
+  @JsonProperty("type")
+  var transformType: String = _
+
+  var value: String = _
+
+}
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-case class Jdbc(driver: String, url: String, user: String, password: String, table: String, sql: String)
+class Jdbc {
+
+  /**
+   * 数据源ID
+   */
+  var id: String = _
+
+  var url: String = _
+
+  var user: String = _
+
+  var password: String = _
+
+  /**
+   * 表
+   */
+  var table: String = _
+
+  /**
+   * 自定义SQL，优先级高于[[table]]
+   */
+  var sql: String = _
+
+}

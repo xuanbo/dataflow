@@ -3,6 +3,8 @@ package tk.fishfish.dataflow.core
 import org.apache.spark.sql.execution.datasources.jdbc.JDBCOptions
 import org.apache.spark.sql.{DataFrame, SparkSession}
 import org.slf4j.{Logger, LoggerFactory}
+import tk.fishfish.dataflow.exception.FlowException
+import tk.fishfish.dataflow.service.DatabaseService
 import tk.fishfish.dataflow.util.{StringUtils, Validation}
 
 import scala.collection.mutable
@@ -19,7 +21,7 @@ trait Source extends Task {
 
 }
 
-class SqlSource(val spark: SparkSession) extends Source {
+class SqlSource(val spark: SparkSession, val databaseService: DatabaseService) extends Source {
 
   private val logger: Logger = LoggerFactory.getLogger(classOf[SqlSource])
 
@@ -27,7 +29,15 @@ class SqlSource(val spark: SparkSession) extends Source {
 
   override def read(conf: Conf): DataFrame = {
     Validation.notNull(conf.jdbc, "配置 [conf.jdbc] 不能为空")
-    Validation.notEmpty(conf.jdbc.driver, "配置 [conf.jdbc.driver] 不能为空")
+    if (StringUtils.isNotEmpty(conf.jdbc.id)) {
+      val database = databaseService.findById(conf.jdbc.id)
+      if (database == null) {
+        throw new FlowException(s"[${taskType()}]源端绑定的数据源ID不存在: ${conf.jdbc.id}")
+      }
+      conf.jdbc.url = database.getUrl
+      conf.jdbc.user = database.getUser
+      conf.jdbc.password = database.getPassword
+    }
     Validation.notEmpty(conf.jdbc.url, "配置 [conf.jdbc.url] 不能为空")
     var sql = ""
     if (StringUtils.isNotEmpty(conf.jdbc.sql)) {
@@ -42,7 +52,6 @@ class SqlSource(val spark: SparkSession) extends Source {
     }
     logger.info("查询SQL: {}", sql)
     spark.read.format("jdbc")
-      .option("driver", conf.jdbc.driver)
       .option(JDBCOptions.JDBC_URL, conf.jdbc.url)
       .option("user", conf.jdbc.user)
       .option("password", conf.jdbc.password)
@@ -53,7 +62,7 @@ class SqlSource(val spark: SparkSession) extends Source {
 
 }
 
-class IoTSource(val spark: SparkSession) extends Source {
+class IoTSource(val spark: SparkSession, val databaseService: DatabaseService) extends Source {
 
   private val logger: Logger = LoggerFactory.getLogger(classOf[IoTSource])
 
@@ -61,6 +70,15 @@ class IoTSource(val spark: SparkSession) extends Source {
 
   override def read(conf: Conf): DataFrame = {
     Validation.notNull(conf.jdbc, "配置 [conf.jdbc] 不能为空")
+    if (StringUtils.isNotEmpty(conf.jdbc.id)) {
+      val database = databaseService.findById(conf.jdbc.id)
+      if (database == null) {
+        throw new FlowException(s"[${taskType()}]源端绑定的数据源ID不存在: ${conf.jdbc.id}")
+      }
+      conf.jdbc.url = database.getUrl
+      conf.jdbc.user = database.getUser
+      conf.jdbc.password = database.getPassword
+    }
     Validation.notEmpty(conf.jdbc.table, "配置 [conf.jdbc.table] 不能为空")
     Validation.notEmpty(conf.jdbc.url, "配置 [conf.jdbc.url] 不能为空")
     Validation.notEmpty(conf.columns, "配置 [conf.columns] 不能为空")

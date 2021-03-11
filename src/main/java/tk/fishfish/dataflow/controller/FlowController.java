@@ -26,7 +26,7 @@ public class FlowController extends BaseController<Flow> {
     private final FlowService flowService;
 
     @PostMapping("/list")
-    public List<Flow> page(@RequestBody FlowCondition condition) {
+    public List<Flow> list(@RequestBody FlowCondition condition) {
         return flowService.query(condition);
     }
 
