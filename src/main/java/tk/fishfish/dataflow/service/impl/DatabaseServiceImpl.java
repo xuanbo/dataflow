@@ -3,7 +3,7 @@ package tk.fishfish.dataflow.service.impl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import scala.collection.Seq;
-import tk.fishfish.dataflow.database.MetaDataQueryFactory;
+import tk.fishfish.dataflow.database.DataHubFactory;
 import tk.fishfish.dataflow.database.Table;
 import tk.fishfish.dataflow.entity.Database;
 import tk.fishfish.dataflow.entity.enums.JdbcProperty;
@@ -29,7 +29,7 @@ public class DatabaseServiceImpl extends BaseServiceImpl<Database> implements Da
     @Override
     public void ping(Database database) {
         Properties props = props(database);
-        String message = MetaDataQueryFactory.create(database.getType(), props).ping();
+        String message = DataHubFactory.create(database.getType(), props).ping();
         if (StringUtils.isNotEmpty(message)) {
             throw BizException.of(-1, message);
         }
@@ -40,7 +40,7 @@ public class DatabaseServiceImpl extends BaseServiceImpl<Database> implements Da
         Database database = Optional.ofNullable(findById(id))
                 .orElseThrow(() -> BizException.of(400, "数据库ID不存在"));
         Properties props = props(database);
-        return MetaDataQueryFactory.create(database.getType(), props).tables();
+        return DataHubFactory.create(database.getType(), props).tables();
     }
 
     @Override
@@ -48,7 +48,7 @@ public class DatabaseServiceImpl extends BaseServiceImpl<Database> implements Da
         Database database = Optional.ofNullable(findById(id))
                 .orElseThrow(() -> BizException.of(400, "数据库ID不存在"));
         Properties props = props(database);
-        return MetaDataQueryFactory.create(database.getType(), props).showTable(name);
+        return DataHubFactory.create(database.getType(), props).showTable(name);
     }
 
     @Override
@@ -56,7 +56,7 @@ public class DatabaseServiceImpl extends BaseServiceImpl<Database> implements Da
         Database database = Optional.ofNullable(findById(id))
                 .orElseThrow(() -> BizException.of(400, "数据库ID不存在"));
         Properties props = props(database);
-        return MetaDataQueryFactory.create(database.getType(), props).showSql(sql);
+        return DataHubFactory.create(database.getType(), props).showSql(sql);
     }
 
     private Properties props(Database database) {

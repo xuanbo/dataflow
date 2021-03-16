@@ -17,6 +17,8 @@ public enum JdbcProperty {
     CATALOG("catalog"),
     SCHEMA("schema"),
 
+    BATCH("batch"),
+
     ;
 
     private final String key;

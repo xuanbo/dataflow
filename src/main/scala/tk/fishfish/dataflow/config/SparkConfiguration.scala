@@ -42,7 +42,7 @@ class SparkConfiguration {
     new SqlSource(spark, databaseService), new IoTSource(spark, databaseService),
     new DefaultTransformer(spark),
     new SqlFilter(spark),
-    new LogTarget(spark), new SqlTarget(spark)
+    new LogTarget(spark), new SqlTarget(spark, databaseService)
   )
 
   @Bean

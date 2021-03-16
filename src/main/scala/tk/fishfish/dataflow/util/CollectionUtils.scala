@@ -12,6 +12,10 @@ object CollectionUtils {
 
   def isNotEmpty(collection: Seq[_]): Boolean = !isEmpty(collection)
 
+  def isEmpty(collection: Iterator[_]): Boolean = collection == null || collection.isEmpty
+
+  def isNotEmpty(collection: Iterator[_]): Boolean = !isEmpty(collection)
+
   def isEmpty(collection: java.util.Set[_]): Boolean = collection == null || collection.isEmpty
 
   def isNotEmpty(collection: java.util.Set[_]): Boolean = !isEmpty(collection)

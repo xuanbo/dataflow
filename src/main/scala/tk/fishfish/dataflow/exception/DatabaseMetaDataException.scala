@@ -6,7 +6,7 @@ package tk.fishfish.dataflow.exception
  * @author 奔波儿灞
  * @version 1.0.0
  */
-class DatabaseMetadataException(message: String, cause: Throwable) extends RuntimeException(message, cause) {
+class DatabaseMetaDataException(message: String, cause: Throwable) extends RuntimeException(message, cause) {
 
   def this(message: String) {
     this(message, null)

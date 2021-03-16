@@ -65,4 +65,9 @@ class Jdbc {
    */
   var sql: String = _
 
+  /**
+   * 写入模式
+   */
+  var mode: String = _
+
 }

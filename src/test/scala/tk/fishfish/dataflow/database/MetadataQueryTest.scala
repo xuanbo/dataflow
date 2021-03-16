@@ -1,7 +1,6 @@
 package tk.fishfish.dataflow.database
 
 import org.junit.{Before, Test}
-import tk.fishfish.dataflow.entity.enums.DriverType
 import tk.fishfish.dataflow.util.Properties
 
 /**
@@ -20,7 +19,7 @@ class MetadataQueryTest {
     props.option("url", "jdbc:iotdb://127.0.0.1:6667/")
     props.option("user", "root")
     props.option("password", "root")
-    metaDataQuery = MetaDataQueryFactory.create(DriverType.IOT, props)
+    metaDataQuery = DataHubFactory.create(props)
   }
 
   @Test

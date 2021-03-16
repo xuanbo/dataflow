@@ -1,6 +1,7 @@
-package tk.fishfish.dataflow.database
+package tk.fishfish.dataflow.database.driver
 
 import com.mysql.cj.conf.PropertyKey
+import tk.fishfish.dataflow.database.SqlDataHub
 import tk.fishfish.dataflow.util.{Properties, Validation}
 
 /**
@@ -9,7 +10,7 @@ import tk.fishfish.dataflow.util.{Properties, Validation}
  * @author 奔波儿灞
  * @version 1.0.0
  */
-class MysqlMetaDataQuery(props: Properties) extends SqlMetaDataQuery(props) {
+class MysqlDataHub(val props: Properties) extends SqlDataHub(props) {
 
   override protected val url: String = {
     var url = props.getString("url")

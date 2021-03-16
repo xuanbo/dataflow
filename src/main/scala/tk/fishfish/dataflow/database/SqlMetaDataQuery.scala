@@ -2,7 +2,7 @@ package tk.fishfish.dataflow.database
 
 import org.slf4j.{Logger, LoggerFactory}
 import tk.fishfish.dataflow.entity.enums.JdbcProperty
-import tk.fishfish.dataflow.exception.DatabaseMetadataException
+import tk.fishfish.dataflow.exception.DatabaseMetaDataException
 import tk.fishfish.dataflow.util.{JdbcUtils, Properties, StringUtils, Validation}
 
 import java.sql.{Connection, DriverManager, PreparedStatement, ResultSet, ResultSetMetaData, SQLException}
@@ -38,7 +38,7 @@ class SqlMetaDataQuery(props: Properties) extends MetaDataQuery {
       null
     } catch {
       case e: SQLException => e.getMessage
-      case e: DatabaseMetadataException => e.getMessage
+      case e: DatabaseMetaDataException => e.getMessage
     } finally {
       JdbcUtils.close(con)
     }
@@ -58,7 +58,7 @@ class SqlMetaDataQuery(props: Properties) extends MetaDataQuery {
         tables = tables :+ name
       }
     } catch {
-      case e: SQLException => throw new DatabaseMetadataException("查询数据源表错误: " + e.getMessage, e)
+      case e: SQLException => throw new DatabaseMetaDataException("查询数据源表错误: " + e.getMessage, e)
     } finally {
       JdbcUtils.close(rs)
       JdbcUtils.close(con)
@@ -88,7 +88,7 @@ class SqlMetaDataQuery(props: Properties) extends MetaDataQuery {
         columns = columns :+ column
       }
     } catch {
-      case e: SQLException => throw new DatabaseMetadataException("查询数据源表错误: " + e.getMessage, e)
+      case e: SQLException => throw new DatabaseMetaDataException("查询数据源表错误: " + e.getMessage, e)
     } finally {
       JdbcUtils.close(rs)
       JdbcUtils.close(con)
@@ -114,7 +114,7 @@ class SqlMetaDataQuery(props: Properties) extends MetaDataQuery {
         columns = columns :+ extractColumn(metaData, i)
       }
     } catch {
-      case e: SQLException => throw new DatabaseMetadataException("根据SQL查询数据源字段结构错误: " + e.getMessage, e)
+      case e: SQLException => throw new DatabaseMetaDataException("根据SQL查询数据源字段结构错误: " + e.getMessage, e)
     } finally {
       JdbcUtils.close(rs)
       JdbcUtils.close(ps)

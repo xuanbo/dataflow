@@ -7,8 +7,6 @@ import tk.fishfish.dataflow.exception.FlowException
 import tk.fishfish.dataflow.service.DatabaseService
 import tk.fishfish.dataflow.util.{StringUtils, Validation}
 
-import scala.collection.mutable
-
 /**
  * 源端
  *
@@ -32,7 +30,7 @@ class SqlSource(val spark: SparkSession, val databaseService: DatabaseService) e
     if (StringUtils.isNotEmpty(conf.jdbc.id)) {
       val database = databaseService.findById(conf.jdbc.id)
       if (database == null) {
-        throw new FlowException(s"[${taskType()}]源端绑定的数据源ID不存在: ${conf.jdbc.id}")
+        throw new FlowException(s"源端[${taskType()}]绑定的数据源ID不存在: ${conf.jdbc.id}")
       }
       conf.jdbc.url = database.getUrl
       conf.jdbc.user = database.getUser
@@ -73,29 +71,32 @@ class IoTSource(val spark: SparkSession, val databaseService: DatabaseService) e
     if (StringUtils.isNotEmpty(conf.jdbc.id)) {
       val database = databaseService.findById(conf.jdbc.id)
       if (database == null) {
-        throw new FlowException(s"[${taskType()}]源端绑定的数据源ID不存在: ${conf.jdbc.id}")
+        throw new FlowException(s"源端[${taskType()}]绑定的数据源ID不存在: ${conf.jdbc.id}")
       }
       conf.jdbc.url = database.getUrl
       conf.jdbc.user = database.getUser
       conf.jdbc.password = database.getPassword
     }
-    Validation.notEmpty(conf.jdbc.table, "配置 [conf.jdbc.table] 不能为空")
     Validation.notEmpty(conf.jdbc.url, "配置 [conf.jdbc.url] 不能为空")
     Validation.notEmpty(conf.columns, "配置 [conf.columns] 不能为空")
     val columns = conf.columns.map(_.name)
-    val sql = s"SELECT ${columns.mkString(", ")} FROM ${conf.jdbc.table}"
-    logger.info("查询SQL: {}", sql)
-    var newColumns = mutable.Seq[String]("Time")
-    for (column <- columns) {
-      newColumns = newColumns :+ column
+    var sql = ""
+    if (StringUtils.isNotEmpty(conf.jdbc.sql)) {
+      // 自定义SQL
+      sql = conf.jdbc.sql
+    } else {
+      // 查询表
+      Validation.notEmpty(conf.jdbc.table, "配置 [conf.jdbc.table] 不能为空")
+      sql = s"SELECT ${columns.mkString(", ")} FROM ${conf.jdbc.table}"
     }
+    logger.info("查询SQL: {}", sql)
     spark.read.format("org.apache.iotdb.spark.db")
       .option(JDBCOptions.JDBC_URL, conf.jdbc.url)
       .option("user", conf.jdbc.user)
       .option("password", conf.jdbc.password)
       .option("sql", sql)
       .load()
-      .toDF(newColumns: _*)
+      .toDF(columns: _*)
   }
 
 }
