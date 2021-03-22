@@ -4,9 +4,9 @@ import org.apache.spark.sql.SparkSession
 import org.springframework.boot.context.properties.{ConfigurationProperties, EnableConfigurationProperties}
 import org.springframework.context.annotation.{Bean, Configuration}
 import org.springframework.validation.annotation.Validated
-import tk.fishfish.dataflow.core._
+import tk.fishfish.dataflow.core.{LogTarget, SqlFilter, SqlJoinTransformer, SqlSource, SqlTarget, SqlTransformer, Task}
 import tk.fishfish.dataflow.dag.{DagExecutor, DefaultDagExecutor}
-import tk.fishfish.dataflow.service.{DatabaseService, ExecutionService, FlowService}
+import tk.fishfish.dataflow.service.{ExecutionService, TaskService}
 
 import java.util.Collections
 import javax.validation.constraints.NotBlank
@@ -38,16 +38,17 @@ class SparkConfiguration {
   }
 
   @Bean
-  def tasks(spark: SparkSession, databaseService: DatabaseService): Seq[Task] = Seq(
-    new SqlSource(spark, databaseService), new IoTSource(spark, databaseService),
-    new DefaultTransformer(spark),
+  def tasks(spark: SparkSession): Seq[Task] = Seq(
+    new SqlSource(spark),
+    new SqlTransformer(spark), new SqlJoinTransformer(spark),
     new SqlFilter(spark),
-    new LogTarget(spark), new SqlTarget(spark, databaseService)
+    new SqlTarget(spark), new LogTarget(spark)
   )
 
   @Bean
-  def dagExecutor(tasks: Seq[Task], executionService: ExecutionService, flowService: FlowService): DagExecutor =
-    new DefaultDagExecutor(tasks, executionService, flowService)
+  def dagExecutor(spark: SparkSession, tasks: Seq[Task], executionService: ExecutionService, taskService: TaskService): DagExecutor =
+    new DefaultDagExecutor(spark, tasks.map(e => (e.name(), e)).toMap, executionService, taskService)
+
 }
 
 @Validated

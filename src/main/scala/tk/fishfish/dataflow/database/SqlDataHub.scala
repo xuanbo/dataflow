@@ -1,11 +1,14 @@
 package tk.fishfish.dataflow.database
 
 import org.apache.spark.sql.Row
+import org.slf4j.{Logger, LoggerFactory}
+import org.springframework.jdbc.support.JdbcUtils
 import tk.fishfish.dataflow.entity.enums.JdbcProperty
-import tk.fishfish.dataflow.exception.DatabaseUpdateException
-import tk.fishfish.dataflow.util.{CollectionUtils, JdbcUtils, Properties}
+import tk.fishfish.dataflow.util.{CollectionUtils, Properties, Validation}
 
-import java.sql.{Connection, PreparedStatement, SQLException}
+import java.sql.{Connection, DriverManager, PreparedStatement}
+import scala.concurrent.duration.DurationInt
+import scala.concurrent.{Await, Future}
 
 /**
  * 通用SQL数据管理
@@ -13,21 +16,29 @@ import java.sql.{Connection, PreparedStatement, SQLException}
  * @author 奔波儿灞
  * @version 1.0.0
  */
-abstract class SqlDataHub(props: Properties) extends SqlMetaDataQuery(props) with DataHub {
+abstract class SqlDataHub(props: Properties) extends DataHub {
 
+  protected val logger: Logger = LoggerFactory.getLogger(getClass)
+
+  protected val url: String = {
+    val url = props.getString(JdbcProperty.URL.key())
+    Validation.nonEmpty(url, "jdbc url参数不能为空")
+    url
+  }
+  protected val user: String = props.getString(JdbcProperty.USER.key())
+  protected val password: String = props.getString(JdbcProperty.PASSWORD.key())
   protected val batch: Int = props.getInt(JdbcProperty.BATCH.key(), 200)
 
   override def insert(table: String, columns: Seq[String], rows: Iterator[Row]): Unit = {
     if (CollectionUtils.isEmpty(rows)) {
       return
     }
-    val sql = s"""insert into $table ${columns.mkString("(", ", ", ")")} values ${columns.map(_ => "?").mkString("(", ", ", ")")}"""
+    val sql = s"""INSERT INTO $table ${columns.mkString("(", ", ", ")")} VALUES ${columns.map(_ => "?").mkString("(", ", ", ")")}"""
     logger.info("执行SQL: {}", sql)
     var con: Connection = null
     var ps: PreparedStatement = null
     try {
       con = getCon
-      resetCatalogAndSchema(con)
       con.setAutoCommit(false)
       ps = con.prepareStatement(sql)
       var batch = 0
@@ -48,12 +59,17 @@ abstract class SqlDataHub(props: Properties) extends SqlMetaDataQuery(props) wit
       }
       ps.executeBatch()
       con.commit()
-    } catch {
-      case e: SQLException => throw new DatabaseUpdateException("写入数据库表错误: " + e.getMessage, e)
     } finally {
-      JdbcUtils.close(ps)
-      JdbcUtils.close(con)
+      JdbcUtils.closeStatement(ps)
+      JdbcUtils.closeConnection(con)
     }
+  }
+
+  protected def getCon: Connection = {
+    import scala.concurrent.ExecutionContext.Implicits.global
+    Await.result(Future {
+      DriverManager.getConnection(url, user, password)
+    }, 5 second)
   }
 
 }

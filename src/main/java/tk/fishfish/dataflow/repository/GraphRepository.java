@@ -1,8 +1,7 @@
 package tk.fishfish.dataflow.repository;
 
-import org.apache.ibatis.annotations.Mapper;
-import tk.fishfish.dataflow.entity.Flow;
 import tk.fishfish.dataflow.entity.Graph;
+import org.apache.ibatis.annotations.Mapper;
 import tk.fishfish.mybatis.repository.Repository;
 
 /**

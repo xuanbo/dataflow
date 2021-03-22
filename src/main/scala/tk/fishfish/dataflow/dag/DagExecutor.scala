@@ -1,14 +1,14 @@
 package tk.fishfish.dataflow.dag
 
-import org.apache.spark.sql.DataFrame
-import org.apache.spark.storage.StorageLevel
+import org.apache.spark.sql.SparkSession
 import org.slf4j.{Logger, LoggerFactory}
+import tk.fishfish.dataflow
 import tk.fishfish.dataflow.core.{Filter, Source, Target, Task, Transformer}
 import tk.fishfish.dataflow.entity.enums.ExecuteStatus
-import tk.fishfish.dataflow.entity.{Execution, Flow}
 import tk.fishfish.dataflow.exception.DagException
-import tk.fishfish.dataflow.service.{ExecutionService, FlowService}
+import tk.fishfish.dataflow.service.{ExecutionService, TaskService}
 
+import java.util.concurrent.atomic.AtomicLong
 import scala.collection.mutable
 
 /**
@@ -19,114 +19,100 @@ import scala.collection.mutable
  */
 trait DagExecutor {
 
-  def run(graphId: String, graph: Graph): Unit
+  def run(executionId: String, dag: Dag): String
 
 }
 
-class DefaultDagExecutor(tasks: Seq[Task], executionService: ExecutionService, flowService: FlowService)
+class DefaultDagExecutor(val spark: SparkSession, val tasks: Map[String, Task],
+                         val executionService: ExecutionService, val taskService: TaskService)
   extends DagExecutor {
 
   private val logger: Logger = LoggerFactory.getLogger(classOf[DefaultDagExecutor])
 
-  private val taskMap: Map[String, Task] = tasks.map(x => (x.taskType(), x)).toMap
+  private[this] val autoIncrement: AtomicLong = new AtomicLong();
 
-  def run(graphId: String, graph: Graph): Unit = {
-    val paths = Dag.simplePaths(graph)
-    val execution = startExecution(graphId)
-    var executionStatus = ExecuteStatus.SUCCESS
-    val map = graph.nodes.map { e => (e.id, e) }.toMap
-    val needCacheNodes = analyseCacheNodes(paths)
-    logger.info("需要缓存的节点: {}", needCacheNodes.mkString(", "))
-    val nodeDF = mutable.Map[String, DataFrame]()
-    val cacheNodes = mutable.Set[DataFrame]()
-    for (path <- paths) {
-      val flowPath = path.mkString(" -> ")
-      logger.info("运行任务流: {}", flowPath)
-      val flow = startFlow(execution.getId, flowPath)
-      var df: DataFrame = null
-      try {
-        for (id <- path) {
-          nodeDF.get(id) match {
-            case Some(tmpDF) => df = tmpDF
-            case None => {
-              map.get(id) match {
-                case Some(node) => {
-                  taskMap.get(node.nodeType) match {
-                    case Some(task) => task match {
-                      case source: Source => df = source.read(node.conf)
-                      case transformer: Transformer => df = transformer.transform(df, node.conf)
-                      case filter: Filter => df = filter.filter(df, node.conf)
-                      case target: Target => target.write(df, node.conf)
-                    }
-                    case None => throw new DagException(s"节点不支持的类型: ${node.nodeType}")
-                  }
-                }
-                case None => // nothing
-              }
-              nodeDF += (id -> df)
+  def run(executionId: String, dag: Dag): String = {
+    val namespace = s"n_${autoIncrement.incrementAndGet()}"
+    logger.info("运行任务流: {}", executionId)
+    val tables = mutable.Set[String]()
+    var status: ExecuteStatus = null
+    var message: String = null
+    try {
+      while (!dag.isComplete) {
+        val nodes = dag.poll()
+        for (node <- nodes) {
+          val taskId = startTask(executionId, node).getId
+          try {
+            tables ++= runTask(namespace, node)
+            status = ExecuteStatus.RUNNING
+          } catch {
+            case e: Exception => {
+              status = ExecuteStatus.ERROR
+              message = e.getMessage
+              throw e
             }
-          }
-          if (needCacheNodes.contains(id)) {
-            // 保证只缓存一次
-            if (!cacheNodes.contains(df)) {
-              df.persist(StorageLevel.MEMORY_AND_DISK)
-              val total = df.count()
-              logger.info("缓存节点: {}, 数据条数: {}", id, total)
-            }
-            cacheNodes += df
+          } finally {
+            endTask(taskId, status, message)
+            dag.complete(node)
           }
         }
-        flow.setStatus(ExecuteStatus.SUCCESS)
-      } catch {
-        case e: Exception => {
-          logger.warn("运行任务流失败", e)
-          flow.setStatus(ExecuteStatus.ERROR)
-          flow.setMessage(e.getMessage)
-          executionStatus = ExecuteStatus.ERROR
-        }
-      } finally {
-        // 清理缓存
-        cacheNodes.foreach(_.unpersist())
-        endFlow(flow)
       }
-    }
-    execution.setStatus(executionStatus)
-    endExecution(execution)
-  }
-
-  private[this] def analyseCacheNodes(paths: Seq[Seq[String]]): Set[String] = {
-    val nodes = mutable.Set[String]()
-    val cacheNodes = mutable.Set[String]()
-    for (path <- paths) {
-      for (node <- path) {
-        if (nodes.contains(node)) {
-          cacheNodes += node
-        }
-        nodes += node
+    } catch {
+      case e: Exception => {
+        logger.warn(s"任务流运行失败: $executionId", e)
       }
+    } finally {
+      // 清理临时表
+      for (table <- tables) {
+        spark.sql(s"DROP TABLE IF EXISTS $table")
+      }
+      logger.info("任务流结束: {}", executionId)
     }
-    cacheNodes.toSet
+    message
   }
 
-  private[this] def startExecution(graphId: String): Execution = {
-    val execution = new Execution()
-    execution.setGraphId(graphId)
-    execution.setStatus(ExecuteStatus.RUNNING)
-    executionService.insert(execution)
-    execution
+  private[this] def runTask(namespace: String, node: Node): Seq[String] = {
+    tasks.get(node.name) match {
+      case Some(task) => task match {
+        case source: Source =>
+          node.argument.namespace = namespace
+          source.read(node.argument)
+          node.argument.tables
+        case transformer: Transformer =>
+          node.argument.namespace = namespace
+          transformer.transform(node.argument)
+          node.argument.tables
+        case filter: Filter =>
+          node.argument.namespace = namespace
+          filter.filter(node.argument)
+          node.argument.tables
+        case target: Target =>
+          node.argument.namespace = namespace
+          target.write(node.argument)
+          node.argument.tables
+        case _ => throw new DagException(s"节点不支持的类型: ${node.name}")
+      }
+      case None => throw new DagException(s"节点不支持的类型: ${node.name}")
+    }
   }
 
-  private[this] def endExecution(execution: Execution): Unit = executionService.update(execution)
-
-  private[this] def startFlow(executionId: String, flowPath: String): Flow = {
-    val flow = new Flow()
-    flow.setExecutionId(executionId)
-    flow.setPath(flowPath)
-    flow.setStatus(ExecuteStatus.RUNNING)
-    flowService.insert(flow)
-    flow
+  private[this] def startTask(executionId: String, node: Node): dataflow.entity.Task = {
+    val task = new dataflow.entity.Task()
+    task.setExecutionId(executionId)
+    task.setNodeId(node.id)
+    task.setNodeName(node.name)
+    task.setNodeText(node.text)
+    task.setStatus(ExecuteStatus.RUNNING)
+    taskService.insert(task)
+    task
   }
 
-  private[this] def endFlow(flow: Flow): Unit = flowService.update(flow)
+  private[this] def endTask(taskId: String, status: ExecuteStatus, message: String): Unit = {
+    val task = new dataflow.entity.Task()
+    task.setId(taskId)
+    task.setStatus(status)
+    task.setMessage(message)
+    taskService.updateSelective(task)
+  }
 
 }

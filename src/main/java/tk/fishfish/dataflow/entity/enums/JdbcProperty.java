@@ -14,8 +14,6 @@ public enum JdbcProperty {
     USER("user"),
     PASSWORD("password"),
     URL("url"),
-    CATALOG("catalog"),
-    SCHEMA("schema"),
 
     BATCH("batch"),
 

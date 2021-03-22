@@ -1,8 +1,8 @@
 package tk.fishfish.dataflow.entity;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import org.springframework.format.annotation.DateTimeFormat;
 import tk.fishfish.dataflow.entity.enums.ExecuteStatus;
+import org.springframework.format.annotation.DateTimeFormat;
 import tk.fishfish.mybatis.entity.Entity;
 
 import javax.persistence.Column;
@@ -10,17 +10,21 @@ import javax.persistence.Table;
 import java.util.Date;
 
 /**
- * 执行流
+ * 节点任务
  *
  * @author 奔波儿灞
  * @version 1.0.0
  */
-@Table(name = "df_flow")
-public class Flow extends Entity {
+@Table(name = "df_task")
+public class Task extends Entity {
 
     private String executionId;
 
-    private String path;
+    private String nodeId;
+
+    private String nodeName;
+
+    private String nodeText;
 
     @Column(name = "status")
     private ExecuteStatus status;
@@ -43,12 +47,28 @@ public class Flow extends Entity {
         this.executionId = executionId;
     }
 
-    public String getPath() {
-        return path;
+    public String getNodeId() {
+        return nodeId;
     }
 
-    public void setPath(String path) {
-        this.path = path;
+    public void setNodeId(String nodeId) {
+        this.nodeId = nodeId;
+    }
+
+    public String getNodeName() {
+        return nodeName;
+    }
+
+    public void setNodeName(String nodeName) {
+        this.nodeName = nodeName;
+    }
+
+    public String getNodeText() {
+        return nodeText;
+    }
+
+    public void setNodeText(String nodeText) {
+        this.nodeText = nodeText;
     }
 
     public ExecuteStatus getStatus() {

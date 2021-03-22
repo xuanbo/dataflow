@@ -1,7 +1,7 @@
 package tk.fishfish.dataflow.condition;
 
-import lombok.Data;
 import tk.fishfish.dataflow.entity.enums.ExecuteStatus;
+import lombok.Data;
 import tk.fishfish.mybatis.condition.annotation.Eq;
 import tk.fishfish.mybatis.condition.annotation.Gte;
 import tk.fishfish.mybatis.condition.annotation.Lt;

@@ -9,11 +9,11 @@ package tk.fishfish.dataflow.core
 trait Task extends Serializable {
 
   /**
-   * 任务类型
+   * 任务名称
    *
    * @return 名称
    */
-  def taskType(): String
+  def name(): String
 
 }
 

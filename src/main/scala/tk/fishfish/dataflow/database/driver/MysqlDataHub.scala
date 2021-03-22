@@ -14,7 +14,7 @@ class MysqlDataHub(val props: Properties) extends SqlDataHub(props) {
 
   override protected val url: String = {
     var url = props.getString("url")
-    Validation.notEmpty(url, "jdbc url参数不能为空")
+    Validation.nonEmpty(url, "jdbc url参数不能为空")
     // 超时连接参数
     if (!url.contains(PropertyKey.connectTimeout.getKeyName)) {
       url = if (url.contains("?")) {

@@ -1,10 +1,9 @@
 package tk.fishfish.dataflow.service.impl;
 
-import org.springframework.stereotype.Service;
-import tk.fishfish.dataflow.entity.Database;
 import tk.fishfish.dataflow.entity.Execution;
 import tk.fishfish.dataflow.service.ExecutionService;
-import tk.fishfish.mybatis.service.BaseService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 import tk.fishfish.mybatis.service.impl.BaseServiceImpl;
 
 import java.util.Date;
@@ -16,6 +15,7 @@ import java.util.Date;
  * @version 1.0.0
  */
 @Service
+@RequiredArgsConstructor
 public class ExecutionServiceImpl extends BaseServiceImpl<Execution> implements ExecutionService {
 
     @Override

@@ -8,25 +8,25 @@ package tk.fishfish.dataflow.util
  */
 object Validation {
 
-  def notNull(value: Any): Unit = notNull(value, "参数不能为空")
+  def nonNull(value: Any): Unit = nonNull(value, "参数不能为空")
 
-  def notNull(value: Any, message: String): Unit = {
+  def nonNull(value: Any, message: String): Unit = {
     if (value == null) {
       throw new IllegalArgumentException(message)
     }
   }
 
-  def notEmpty(value: String): Unit = notEmpty(value, "参数不能为空")
+  def nonEmpty(value: String): Unit = nonEmpty(value, "参数不能为空")
 
-  def notEmpty(value: String, message: String): Unit = {
+  def nonEmpty(value: String, message: String): Unit = {
     if (value == null || value.isEmpty) {
       throw new IllegalArgumentException(message)
     }
   }
 
-  def notEmpty(value: Seq[_]): Unit = notEmpty(value, "参数不能为空")
+  def nonEmpty(value: Seq[_]): Unit = nonEmpty(value, "参数不能为空")
 
-  def notEmpty(value: Seq[_], message: String): Unit = {
+  def nonEmpty(value: Seq[_], message: String): Unit = {
     if (value == null || value.isEmpty) {
       throw new IllegalArgumentException(message)
     }

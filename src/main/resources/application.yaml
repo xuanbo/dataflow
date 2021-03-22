@@ -19,7 +19,7 @@ mybatis:
   # mapper的xml位置
   mapper-locations: classpath:mapper/*Mapper.xml
   # 包别名
-  type-aliases-package: tk.fishfish.dataflow.entity
+  type-aliases-package: com.juntai.dataflow.entity
   configuration:
     # 下划线转驼峰
     map-underscore-to-camel-case: true

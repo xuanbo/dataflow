@@ -1,11 +1,15 @@
 package tk.fishfish.dataflow.service.impl;
 
+import tk.fishfish.dataflow.dag.Dag;
+import tk.fishfish.dataflow.dag.DagExecutor;
+import tk.fishfish.dataflow.entity.Execution;
+import tk.fishfish.dataflow.entity.Graph;
+import tk.fishfish.dataflow.entity.enums.ExecuteStatus;
+import tk.fishfish.dataflow.service.ExecutionService;
+import tk.fishfish.dataflow.service.GraphService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import tk.fishfish.dataflow.dag.DagExecutor;
-import tk.fishfish.dataflow.entity.Graph;
-import tk.fishfish.dataflow.service.GraphService;
 import tk.fishfish.json.Json;
 import tk.fishfish.mybatis.service.impl.BaseServiceImpl;
 
@@ -22,8 +26,8 @@ import java.util.Date;
 @RequiredArgsConstructor
 public class GraphServiceImpl extends BaseServiceImpl<Graph> implements GraphService {
 
-    private final DagExecutor dagExecutor;
-
+    private final ExecutionService executionService;
+    private final DagExecutor executor;
     private final Json json;
 
     @Override
@@ -33,7 +37,19 @@ public class GraphServiceImpl extends BaseServiceImpl<Graph> implements GraphSer
             log.warn("流程图不存在: {}", id);
             return;
         }
-        dagExecutor.run(id, json.read(graph.getContent(), tk.fishfish.dataflow.dag.Graph.class));
+        // 运行记录
+        Execution execution = new Execution();
+        execution.setGraphId(id);
+        execution.setGraphContent(graph.getContent());
+        executionService.insert(execution);
+        String executionId = execution.getId();
+        // 运行
+        String message = executor.run(executionId, Dag.apply(json.read(graph.getContent(), tk.fishfish.dataflow.dag.Graph.class)));
+        // 运行结果
+        execution = new Execution();
+        execution.setId(executionId);
+        execution.setStatus(message == null ? ExecuteStatus.SUCCESS : ExecuteStatus.ERROR);
+        execution.setMessage(message);
     }
 
     @Override

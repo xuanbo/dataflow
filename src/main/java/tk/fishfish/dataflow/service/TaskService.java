@@ -1,13 +1,13 @@
 package tk.fishfish.dataflow.service;
 
-import tk.fishfish.dataflow.entity.Flow;
+import tk.fishfish.dataflow.entity.Task;
 import tk.fishfish.mybatis.service.BaseService;
 
 /**
- * 执行流
+ * 节点任务
  *
  * @author 奔波儿灞
  * @version 1.0.0
  */
-public interface FlowService extends BaseService<Flow> {
+public interface TaskService extends BaseService<Task> {
 }

@@ -1,8 +1,9 @@
 package tk.fishfish.dataflow.core
 
 import org.apache.commons.lang3.StringUtils
-import org.apache.spark.sql.{DataFrame, SparkSession}
-import tk.fishfish.dataflow.util.CollectionUtils
+import org.apache.spark.sql.SparkSession
+import org.slf4j.{Logger, LoggerFactory}
+import tk.fishfish.dataflow.util.Validation
 
 /**
  * 过滤
@@ -12,20 +13,49 @@ import tk.fishfish.dataflow.util.CollectionUtils
  */
 trait Filter extends Task {
 
-  def filter(df: DataFrame, conf: Conf): DataFrame
+  def filter(argument: Argument): Unit
 
 }
 
 class SqlFilter(val spark: SparkSession) extends Filter {
 
-  override def taskType(): String = "SQL_FILTER"
+  private val logger: Logger = LoggerFactory.getLogger(classOf[SqlFilter])
 
-  override def filter(df: DataFrame, conf: Conf): DataFrame = {
-    if (df == null) return df
-    if (CollectionUtils.isEmpty(conf.conditions)) return df
-    var res: DataFrame = df
-    conf.conditions.filter(e => StringUtils.isNotBlank(e)).foreach(e => res = res.filter(e))
-    res
+  override def name(): String = "FILTER_SQL"
+
+  override def filter(argument: Argument): Unit = {
+    Validation.nonNull(argument.input, "配置 [argument.input] 不能为空")
+    Validation.nonNull(argument.output, "配置 [argument.output] 不能为空")
+
+    var inTable = argument.input.getString("table")
+    val where = argument.input.getString("where")
+    val orderBy = argument.input.getString("orderBy")
+    val limit = argument.input.getString("limit")
+    Validation.nonEmpty(inTable, "配置 [argument.input.table] 不能为空")
+
+    var outTable = argument.output.getString("table")
+    Validation.nonEmpty(outTable, "配置 [argument.output.table] 不能为空")
+
+    inTable = s"${argument.namespace}_$inTable"
+    outTable = s"${argument.namespace}_$outTable"
+    var sql = s"SELECT * FROM $inTable"
+    if (StringUtils.isNotEmpty(where)) {
+      sql = sql + s" WHERE $where"
+    }
+    if (StringUtils.isNotEmpty(orderBy)) {
+      sql = sql + s" ORDER BY $orderBy"
+    }
+    if (StringUtils.isNotEmpty(limit)) {
+      sql = sql + s" LIMIT $limit"
+    }
+    logger.info(s"过滤SQL: $sql, 输出表: $outTable")
+    spark.sql(sql).createOrReplaceTempView(outTable)
+
+    // 缓存表
+    spark.sqlContext.cacheTable(outTable)
+    spark.sqlContext.table(outTable).count()
+
+    argument.tables = Seq(inTable, outTable)
   }
 
 }

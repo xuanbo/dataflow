@@ -1,11 +1,10 @@
 package tk.fishfish.dataflow.core
 
-import org.apache.spark.sql.{DataFrame, SparkSession}
+import org.apache.spark.sql.SparkSession
+import org.slf4j.{Logger, LoggerFactory}
 import tk.fishfish.dataflow.database.DataHubFactory
 import tk.fishfish.dataflow.entity.enums.JdbcProperty
-import tk.fishfish.dataflow.exception.FlowException
-import tk.fishfish.dataflow.service.DatabaseService
-import tk.fishfish.dataflow.util.{Properties, StringUtils, Validation}
+import tk.fishfish.dataflow.util.{Properties, Validation}
 
 /**
  * 目标
@@ -15,43 +14,60 @@ import tk.fishfish.dataflow.util.{Properties, StringUtils, Validation}
  */
 trait Target extends Task {
 
-  def write(df: DataFrame, conf: Conf): Unit
+  def write(argument: Argument): Unit
 
 }
 
 class LogTarget(val spark: SparkSession) extends Target {
 
-  override def taskType(): String = "LOG_TARGET"
+  override def name(): String = "TARGET_LOG"
 
-  override def write(df: DataFrame, conf: Conf): Unit = df.show()
+  override def write(argument: Argument): Unit = {
+    Validation.nonNull(argument.input, "配置 [argument.input] 不能为空")
 
-}
+    var table = argument.input.getString("table")
+    Validation.nonEmpty(table, "配置 [argument.input.table] 不能为空")
 
-class SqlTarget(val spark: SparkSession, val databaseService: DatabaseService) extends Target {
+    table = s"${argument.namespace}_$table"
+    spark.table(table).show()
 
-  override def taskType(): String = "SQL_TARGET"
-
-  override def write(df: DataFrame, conf: Conf): Unit = {
-    Validation.notNull(conf.jdbc, "配置 [conf.jdbc] 不能为空")
-    Validation.notEmpty(conf.jdbc.table, "配置 [conf.jdbc.table] 不能为空")
-    if (StringUtils.isNotEmpty(conf.jdbc.id)) {
-      val database = databaseService.findById(conf.jdbc.id)
-      if (database == null) {
-        throw new FlowException(s"源端[${taskType()}]绑定的数据源ID不存在: ${conf.jdbc.id}")
-      }
-      conf.jdbc.url = database.getUrl
-      conf.jdbc.user = database.getUser
-      conf.jdbc.password = database.getPassword
-    }
-    Validation.notEmpty(conf.jdbc.url, "配置 [conf.jdbc.url] 不能为空")
-    val table = conf.jdbc.table
-    val columns = df.schema.map(_.name)
-    val props = new Properties()
-      .option(JdbcProperty.URL.key(), conf.jdbc.url)
-      .option(JdbcProperty.USER.key(), conf.jdbc.user)
-      .option(JdbcProperty.PASSWORD.key(), conf.jdbc.password)
-    df.foreachPartition(rows => DataHubFactory.create(props).insert(table, columns, rows))
+    argument.tables = Seq(table)
   }
 
 }
 
+class SqlTarget(val spark: SparkSession) extends Target {
+
+  private val logger: Logger = LoggerFactory.getLogger(classOf[SqlTarget])
+
+  override def name(): String = "TARGET_SQL"
+
+  override def write(argument: Argument): Unit = {
+    Validation.nonNull(argument.input, "配置 [argument.input] 不能为空")
+    Validation.nonNull(argument.output, "配置 [argument.output] 不能为空")
+
+    var inTable = argument.input.getString("table")
+    Validation.nonEmpty(inTable, "配置 [argument.input.table] 不能为空")
+
+    val url = argument.output.getString("url")
+    val user = argument.output.getString("user")
+    val password = argument.output.getString("password")
+    val outTable = argument.output.getString("table")
+    Validation.nonEmpty(url, "配置 [argument.output.url] 不能为空")
+    Validation.nonEmpty(outTable, "配置 [argument.output.table] 不能为空")
+
+    inTable = s"${argument.namespace}_$inTable"
+    logger.info(s"读入表: $inTable, 写入表: $outTable")
+
+    val props = new Properties()
+      .option(JdbcProperty.URL.key(), url)
+      .option(JdbcProperty.USER.key(), user)
+      .option(JdbcProperty.PASSWORD.key(), password)
+    val df = spark.table(inTable)
+    val columns = df.schema.map(_.name)
+    df.foreachPartition(rows => DataHubFactory.create(props).insert(outTable, columns, rows))
+
+    argument.tables = Seq(inTable)
+  }
+
+}
