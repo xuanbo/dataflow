@@ -8,6 +8,10 @@
 - Spark 2.4.7
 - Spring Boot 2.3.7.RELEASE
 
+## 介绍
+
+基于 Spark 任务流执行平台，每个节点作为一个任务节点。
+
 ## 快速开始
 
 - 修改 src/main/resources/application.yaml 配置文件
@@ -21,7 +25,7 @@
       password: 123456
   ```
 
-- 启动 src/main/resources/com.juntai.dataflow.Bootstrap 程序
+- 启动 src/main/resources/tk.fishfish.dataflow.Bootstrap 程序
 
 ## 组件
 
