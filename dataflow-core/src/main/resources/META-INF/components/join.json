@@ -1,0 +1,97 @@
+{
+  "group": "BASIC",
+  "name": "TRANSFORMER_SQL_JOIN",
+  "text": "合并（JOIN）",
+  "argument": {
+    "input": [
+      {
+        "name": "table",
+        "type": "string",
+        "component": "input",
+        "required": true,
+        "remark": "读取物化视图"
+      },
+      {
+        "name": "tableAlias",
+        "type": "string",
+        "component": "input",
+        "required": true,
+        "remark": "读取物化视图别名，用别名填写SQL 查询列、关联条件"
+      },
+      {
+        "name": "select",
+        "type": "string",
+        "component": "textarea",
+        "required": true,
+        "remark": "SQL 查询列（支持别名、函数），无需写 SELECT 关键字"
+      },
+      {
+        "name": "joins",
+        "type": "array",
+        "component": "list",
+        "required": true,
+        "remark": "表 JOIN 配置",
+        "list": [
+          {
+            "name": "table",
+            "type": "string",
+            "component": "input",
+            "required": true,
+            "remark": "关联物化视图"
+          },
+          {
+            "name": "tableAlias",
+            "type": "string",
+            "component": "input",
+            "required": true,
+            "remark": "关联物化视图别名，用别名填写关联条件"
+          },
+          {
+            "name": "on",
+            "type": "string",
+            "component": "textarea",
+            "required": true,
+            "remark": "JOIN ON 关联条件，无需写 ON 关键字"
+          }
+        ]
+      },
+      {
+        "name": "where",
+        "type": "string",
+        "component": "textarea",
+        "required": true,
+        "remark": "SQL WHERE 过滤语句，无需写 WHERE 关键字"
+      },
+      {
+        "name": "groupBy",
+        "type": "string",
+        "component": "textarea",
+        "required": false,
+        "remark": "SQL GROUP BY 分组语句，无需写 GROUP BY 关键字"
+      },
+      {
+        "name": "orderBy",
+        "type": "string",
+        "component": "textarea",
+        "required": false,
+        "remark": "SQL ORDER BY 排序语句，无需写 ORDER BY 关键字"
+      },
+      {
+        "name": "limit",
+        "type": "number",
+        "component": "input",
+        "required": false,
+        "remark": "SQL LIMIT 限制条数语句"
+      }
+    ],
+    "output": [
+      {
+        "name": "table",
+        "type": "string",
+        "component": "input",
+        "required": true,
+        "remark": "结果物化视图"
+      }
+    ]
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "group": "BASIC",
+  "name": "TRANSFORMER_SQL",
+  "text": "转换",
+  "argument": {
+    "input": [
+      {
+        "name": "table",
+        "type": "string",
+        "component": "input",
+        "required": true,
+        "remark": "读取物化视图"
+      },
+      {
+        "name": "select",
+        "type": "string",
+        "component": "textarea",
+        "required": true,
+        "remark": "SQL 查询列（支持别名、函数），无需写 SELECT 关键字"
+      },
+      {
+        "name": "groupBy",
+        "type": "string",
+        "component": "textarea",
+        "required": false,
+        "remark": "SQL GROUP BY 分组语句，无需写 GROUP BY 关键字"
+      }
+    ],
+    "output": [
+      {
+        "name": "table",
+        "type": "string",
+        "component": "input",
+        "required": true,
+        "remark": "结果物化视图"
+      }
+    ]
+  }
+}

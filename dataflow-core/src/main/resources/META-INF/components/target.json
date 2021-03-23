@@ -1,0 +1,53 @@
+{
+  "group": "BASIC",
+  "name": "TARGET_SQL",
+  "text": "源端",
+  "argument": {
+    "input": [
+      {
+        "name": "table",
+        "type": "string",
+        "component": "input",
+        "required": true,
+        "remark": "读取物化视图"
+      }
+    ],
+    "output": [
+      {
+        "name": "url",
+        "type": "string",
+        "component": "input",
+        "required": true,
+        "remark": "JDBC 连接\r\njdbc:mysql://127.0.0.1:3306/test\r\njdbc:iotdb://127.0.0.1:6667/"
+      },
+      {
+        "name": "user",
+        "type": "string",
+        "component": "input",
+        "required": false,
+        "remark": "JDBC 用户名"
+      },
+      {
+        "name": "password",
+        "type": "string",
+        "component": "password",
+        "required": false,
+        "remark": "JDBC 密码"
+      },
+      {
+        "name": "table",
+        "type": "string",
+        "component": "input",
+        "required": true,
+        "remark": "目标端写入数据库表名"
+      },
+      {
+        "name": "partition",
+        "type": "number",
+        "component": "input",
+        "required": false,
+        "remark": "分区数量，默认4，该数值会影响写入的性能"
+      }
+    ]
+  }
+}

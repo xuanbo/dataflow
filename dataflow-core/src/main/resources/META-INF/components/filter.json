@@ -1,0 +1,46 @@
+{
+  "group": "BASIC",
+  "name": "FILTER_SQL",
+  "text": "过滤",
+  "argument": {
+    "input": [
+      {
+        "name": "table",
+        "type": "string",
+        "component": "input",
+        "required": true,
+        "remark": "读取物化视图"
+      },
+      {
+        "name": "where",
+        "type": "string",
+        "component": "textarea",
+        "required": true,
+        "remark": "SQL WHERE 过滤语句，无需写 WHERE 关键字"
+      },
+      {
+        "name": "orderBy",
+        "type": "string",
+        "component": "textarea",
+        "required": false,
+        "remark": "SQL ORDER BY 排序语句，无需写 ORDER BY 关键字"
+      },
+      {
+        "name": "limit",
+        "type": "number",
+        "component": "input",
+        "required": false,
+        "remark": "SQL LIMIT 限制条数语句"
+      }
+    ],
+    "output": [
+      {
+        "name": "table",
+        "type": "string",
+        "component": "input",
+        "required": true,
+        "remark": "结果物化视图"
+      }
+    ]
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "group": "ALGORITHM",
+  "name": "ALGORITHM_VARIANCE",
+  "text": "方差",
+  "argument": {
+    "input": [
+      {
+        "name": "table",
+        "type": "string",
+        "component": "input",
+        "required": true,
+        "remark": "读取物化视图"
+      },
+      {
+        "name": "col",
+        "type": "string",
+        "component": "input",
+        "required": true,
+        "remark": "求方差的字段列，必须是浮点型数据"
+      }
+    ],
+    "output": [
+      {
+        "name": "table",
+        "type": "string",
+        "component": "input",
+        "required": true,
+        "remark": "结果物化视图"
+      }
+    ]
+  }
+}

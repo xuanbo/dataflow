@@ -1,0 +1,46 @@
+{
+  "group": "BASIC",
+  "name": "SOURCE_SQL",
+  "text": "源端",
+  "argument": {
+    "input": [
+      {
+        "name": "url",
+        "type": "string",
+        "component": "input",
+        "required": true,
+        "remark": "JDBC 连接\r\njdbc:mysql://127.0.0.1:3306/test\r\njdbc:iotdb://127.0.0.1:6667/"
+      },
+      {
+        "name": "user",
+        "type": "string",
+        "component": "input",
+        "required": false,
+        "remark": "JDBC 用户名"
+      },
+      {
+        "name": "password",
+        "type": "string",
+        "component": "password",
+        "required": false,
+        "remark": "JDBC 密码"
+      },
+      {
+        "name": "sql",
+        "type": "string",
+        "component": "textarea",
+        "required": true,
+        "remark": "源端读取 SQL 语句"
+      }
+    ],
+    "output": [
+      {
+        "name": "table",
+        "type": "string",
+        "component": "input",
+        "required": true,
+        "remark": "结果物化视图"
+      }
+    ]
+  }
+}

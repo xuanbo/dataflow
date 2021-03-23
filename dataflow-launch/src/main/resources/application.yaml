@@ -1,0 +1,39 @@
+server:
+  port: 9090
+
+spark:
+  appName: dataflow
+  master: local[4]
+
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/dataflow?serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=utf8
+    username: root
+    password: 123456
+  liquibase:
+    enabled: true
+    change-log: classpath:db/changelog/master.xml
+
+mybatis:
+  # mapper的xml位置
+  mapper-locations: classpath:mapper/*Mapper.xml
+  # 包别名
+  type-aliases-package: tk.fishfish.dataflow.entity
+  configuration:
+    # 下划线转驼峰
+    map-underscore-to-camel-case: true
+  # 分⻚
+  page-helper:
+    helper-dialect: mysql
+    reasonable: "true"
+    params: count=countSql
+  # 通用mapper
+  mapper:
+    mappers:
+      - tk.fishfish.mybatis.repository.Repository
+    not-empty: true
+
+logging:
+  level:
+    tk.fishfish: DEBUG
