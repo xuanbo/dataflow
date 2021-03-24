@@ -1,6 +1,7 @@
 package tk.fishfish.dataflow.core
 
 import com.fasterxml.jackson.annotation.JsonInclude
+import tk.fishfish.json.util.JSON
 
 import scala.beans.BeanProperty
 
@@ -29,20 +30,14 @@ class Argument {
 
 class Configuration extends java.util.HashMap[String, Any] {
 
-  def getString(key: String): String = {
+  def getString(key: String): String = getString(key, null)
+
+  def getString(key: String, default: String): String = {
     val value = get(key)
     if (value == null) {
-      return null
+      return default
     }
     value.toString
-  }
-
-  def getInt(key: String): Int = {
-    val value = get(key)
-    if (value == null) {
-      return 0
-    }
-    Integer.parseInt(value.toString)
   }
 
   def getInt(key: String, default: Int): Int = {
@@ -53,21 +48,25 @@ class Configuration extends java.util.HashMap[String, Any] {
     Integer.parseInt(value.toString)
   }
 
-  def getSeq(key: String): Seq[Configuration] = {
+  def get[T](key: String, clazz: Class[T]): Option[T] = {
+    val value = get(key)
+    if (value == null) {
+      return None
+    }
+    val json = JSON.write(value)
+    Some(JSON.read(json, clazz))
+  }
+
+  def getSeq(key: String): Seq[Configuration] = getSeq(key, classOf[Configuration])
+
+  def getSeq[T](key: String, clazz: Class[T]): Seq[T] = {
     val value = get(key)
     if (value == null) {
       return Seq.empty
     }
-    value match {
-      case v: Seq[Map[String, Any]] => {
-        v.map(map => {
-          val conf = new Configuration()
-          map.foreach(e => conf.put(e._1, e._2))
-          conf
-        })
-      }
-      case v => throw new IllegalArgumentException(s"参数类型不合法, 期待: Seq[Map[String, Any]], 实际: ${v.getClass}")
-    }
+    val json = JSON.write(value)
+    import scala.collection.JavaConversions.asScalaBuffer
+    JSON.readList(json, clazz)
   }
 
 }

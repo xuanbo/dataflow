@@ -3,7 +3,7 @@ server:
 
 spark:
   appName: dataflow
-  master: local[4]
+  master: local[*]
 
 spring:
   datasource:

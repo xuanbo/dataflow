@@ -1,5 +1,8 @@
 package tk.fishfish.dataflow.service.impl;
 
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
 import tk.fishfish.dataflow.dag.Dag;
 import tk.fishfish.dataflow.dag.DagExecutor;
 import tk.fishfish.dataflow.entity.Execution;
@@ -7,10 +10,7 @@ import tk.fishfish.dataflow.entity.Graph;
 import tk.fishfish.dataflow.entity.enums.ExecuteStatus;
 import tk.fishfish.dataflow.service.ExecutionService;
 import tk.fishfish.dataflow.service.GraphService;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
-import tk.fishfish.json.Json;
+import tk.fishfish.json.util.JSON;
 import tk.fishfish.mybatis.service.impl.BaseServiceImpl;
 
 import java.util.Date;
@@ -28,7 +28,6 @@ public class GraphServiceImpl extends BaseServiceImpl<Graph> implements GraphSer
 
     private final ExecutionService executionService;
     private final DagExecutor executor;
-    private final Json json;
 
     @Override
     public void run(String id) {
@@ -44,7 +43,7 @@ public class GraphServiceImpl extends BaseServiceImpl<Graph> implements GraphSer
         executionService.insert(execution);
         String executionId = execution.getId();
         // 运行
-        String message = executor.run(executionId, Dag.apply(json.read(graph.getContent(), tk.fishfish.dataflow.dag.Graph.class)));
+        String message = executor.run(executionId, Dag.apply(JSON.read(graph.getContent(), tk.fishfish.dataflow.dag.Graph.class)));
         // 运行结果
         execution = new Execution();
         execution.setId(executionId);

@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import tk.fishfish.dataflow.entity.enums.ComponentGroup;
-import tk.fishfish.json.Json;
+import tk.fishfish.json.util.JSON;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -31,8 +31,6 @@ import java.util.stream.Collectors;
 @RequestMapping("/v1/component")
 public class ComponentController implements CommandLineRunner {
 
-    private final Json json;
-
     private List<Map<String, Object>> tree;
 
     @GetMapping("/tree")
@@ -50,7 +48,7 @@ public class ComponentController implements CommandLineRunner {
         for (Resource resource : resources) {
             log.info("组件: {}", resource.getFilename());
             byte[] bytes = FileCopyUtils.copyToByteArray(resource.getInputStream());
-            Map<String, Object> component = json.readMap(new String(bytes));
+            Map<String, Object> component = JSON.readMap(new String(bytes));
             String groupName = component.getOrDefault("group", ComponentGroup.OTHER.name()).toString();
             ComponentGroup group = ComponentGroup.valueOf(groupName);
             List<Map<String, Object>> list = tree.computeIfAbsent(group, (key) -> new ArrayList<>());

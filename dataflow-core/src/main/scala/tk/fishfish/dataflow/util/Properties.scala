@@ -10,8 +10,6 @@ import scala.collection.mutable
  */
 class Properties extends mutable.LinkedHashMap[String, Any] {
 
-  def getProperty(key: String): Any = get(key).orNull
-
   def getString(key: String): String = getString(key, null)
 
   def getString(key: String, default: String): String = get(key) match {
@@ -23,14 +21,7 @@ class Properties extends mutable.LinkedHashMap[String, Any] {
     case None => default
   }
 
-  def getInt(key: String): Int = get(key) match {
-    case Some(e) => e match {
-      case int: Int => int
-      case null => 0
-      case _ => Integer.parseInt(e.toString)
-    }
-    case None => 0
-  }
+  def getInt(key: String): Int = getInt(key, 0)
 
   def getInt(key: String, default: Int): Int = get(key) match {
     case Some(e) => e match {

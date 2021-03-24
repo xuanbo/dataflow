@@ -16,7 +16,7 @@ import java.sql.{Connection, PreparedStatement}
 class IotdbDataHub(val props: Properties) extends SqlDataHub(props) {
 
   override def insert(table: String, columns: Seq[String], rows: Iterator[Row]): Unit = {
-    if (CollectionUtils.isEmpty(rows)) {
+    if (CollectionUtils.isEmpty(rows) || CollectionUtils.isEmpty(columns)) {
       return
     }
     // 时间字段放最前面
@@ -64,5 +64,7 @@ class IotdbDataHub(val props: Properties) extends SqlDataHub(props) {
       JdbcUtils.closeConnection(con)
     }
   }
+
+  override def update(table: String, columns: Seq[String], rows: Iterator[Row]): Unit = this.insert(table, columns, rows)
 
 }

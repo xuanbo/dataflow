@@ -4,6 +4,7 @@ import org.apache.commons.lang3.StringUtils
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.execution.datasources.jdbc.JDBCOptions
 import org.slf4j.{Logger, LoggerFactory}
+import tk.fishfish.dataflow.exception.DagException
 import tk.fishfish.dataflow.util.Validation
 
 /**
@@ -53,11 +54,14 @@ class SqlSource extends Source {
         .createOrReplaceTempView(table)
     } else {
       spark.read.format("jdbc")
+        // 防止集群下，找不到驱动
+        .option(JDBCOptions.JDBC_DRIVER_CLASS, determineDriverClass(url))
         .option(JDBCOptions.JDBC_URL, url)
         .option("user", user)
         .option("password", password)
         .option(JDBCOptions.JDBC_QUERY_STRING, sql)
-        .option(JDBCOptions.JDBC_NUM_PARTITIONS, 10)
+        .option(JDBCOptions.JDBC_BATCH_FETCH_SIZE, 1024)
+        .option(JDBCOptions.JDBC_NUM_PARTITIONS, 4)
         .load()
         .createOrReplaceTempView(table)
     }
@@ -67,6 +71,14 @@ class SqlSource extends Source {
     spark.sqlContext.table(table).count()
 
     argument.tables = Seq(table)
+  }
+
+  private def determineDriverClass(url: String): String = {
+    if (url.startsWith("jdbc:mysql://")) {
+      classOf[com.mysql.cj.jdbc.Driver].getName
+    } else {
+      throw new DagException(s"不支持的驱动: $url");
+    }
   }
 
   override def setSparkSession(spark: SparkSession): Unit = this.spark = spark

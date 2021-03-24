@@ -15,4 +15,7 @@ trait DataHub {
   @throws[SQLException]
   def insert(table: String, columns: Seq[String], rows: Iterator[Row]): Unit
 
+  @throws[SQLException]
+  def update(table: String, columns: Seq[String], rows: Iterator[Row]): Unit
+
 }

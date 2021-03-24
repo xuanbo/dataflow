@@ -47,6 +47,24 @@
         "remark": "目标端写入数据库表名"
       },
       {
+        "name": "mode",
+        "text": "写入模式",
+        "type": "string",
+        "component": "single-select",
+        "options": [
+          {
+            "label": "插入",
+            "value": "insert"
+          },
+          {
+            "label": "重复时更新",
+            "value": "update"
+          }
+        ],
+        "required": false,
+        "remark": "写入模式，默认 insert"
+      },
+      {
         "name": "partition",
         "text": "分区数量",
         "type": "number",

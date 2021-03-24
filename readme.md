@@ -11,9 +11,9 @@
 ## 模块介绍
 
 ```text
-├── dataflow-core				核心模块
-├── dataflow-launch			启动		
-├── dataflow-plugin			插件（组件）
+├── dataflow-core        核心模块
+├── dataflow-launch      启动		
+├── dataflow-plugin      插件（组件）
 ```
 
 ## 快速开始
@@ -30,6 +30,21 @@
   ```
 
 - 启动 src/main/resources/tk.fishfish.dataflow.Bootstrap 程序
+
+- 部署（内嵌 Spark 服务，对于集群部署见集群说明）
+
+  打包（指定 dev 环境，会将 Spark 依赖打入 jar 包）：
+
+  ```shell
+  mvn clean package -Pdev -DskipTests
+  ```
+
+  运行：
+
+  ```shell
+  java -jar /some/path/dataflow-launch-1.0.0-SNAPSHOT.jar
+  ```
+
 
 ## 组件
 
@@ -124,3 +139,30 @@ POST http://127.0.0.1:9090/v1/dag/run
   ]
 }
 ```
+
+## 集群
+
+![cluster](./docs/cluster.png)
+
+默认情况下，Profile dev 为开发测试环境。通过 prod 开启集群环境支持。
+
+打包：
+
+```shell
+mvn clean package -Pprod -DskipTests
+```
+
+此时，jar 中不包含 spark 相关的依赖，我们通过 spark-submit 将程序部署到集群（standalone）：
+
+```shell
+./bin/spark-submit \
+ --master spark://spark-master:7077 \
+ --deploy-mode client \
+ --class tk.fishfish.dataflow.Bootstrap \
+ --conf spark.driver.userClassPathFirst=true \
+ /some/path/dataflow-launch-1.0.0-SNAPSHOT.jar
+```
+
+对于 yarn 环境则将 master 修改为 yarn 即可。
+
+注意：deploy-mode 为 client 是为了固定 driver 端，方便作为 API 服务访问。

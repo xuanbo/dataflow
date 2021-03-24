@@ -27,13 +27,16 @@ abstract class SqlDataHub(props: Properties) extends DataHub {
   }
   protected val user: String = props.getString(JdbcProperty.USER.key())
   protected val password: String = props.getString(JdbcProperty.PASSWORD.key())
-  protected val batch: Int = props.getInt(JdbcProperty.BATCH.key(), 2048)
+  protected val batch: Int = props.getInt(JdbcProperty.BATCH.key(), 200)
 
   override def insert(table: String, columns: Seq[String], rows: Iterator[Row]): Unit = {
-    if (CollectionUtils.isEmpty(rows)) {
+    if (CollectionUtils.isEmpty(rows) || CollectionUtils.isEmpty(columns)) {
       return
     }
-    val sql = s"""INSERT INTO $table ${columns.mkString("(", ", ", ")")} VALUES ${columns.map(_ => "?").mkString("(", ", ", ")")}"""
+    val sql =
+      s"""
+         |INSERT INTO $table ${columns.mkString("(", ", ", ")")} VALUES ${columns.map(_ => "?").mkString("(", ", ", ")")}
+         |""".stripMargin.replaceAll("\n", " ")
     logger.info("执行SQL: {}", sql)
     var con: Connection = null
     var ps: PreparedStatement = null
@@ -65,11 +68,52 @@ abstract class SqlDataHub(props: Properties) extends DataHub {
     }
   }
 
+  override def update(table: String, columns: Seq[String], rows: Iterator[Row]): Unit = {
+    if (CollectionUtils.isEmpty(rows) || CollectionUtils.isEmpty(columns)) {
+      return
+    }
+    val sql =
+      s"""
+         |INSERT INTO $table ${columns.mkString("(", ", ", ")")} VALUES ${columns.map(_ => "?").mkString("(", ", ", ")")}
+         |ON DUPLICATE KEY UPDATE ${columns.map(column => s"$column = ?").mkString(", ")}
+         |""".stripMargin.replaceAll("\n", " ")
+    logger.info("执行SQL: {}", sql)
+    var con: Connection = null
+    var ps: PreparedStatement = null
+    try {
+      con = getCon
+      con.setAutoCommit(false)
+      ps = con.prepareStatement(sql)
+      var batch = 0
+      for (row <- rows) {
+        batch = batch + 1
+        var i = 0
+        for (column <- columns) {
+          val value: Any = row.getAs(column)
+          ps.setObject(i + 1, value)
+          ps.setObject(i + 1 + columns.size, value)
+          i = i + 1
+        }
+        ps.addBatch()
+        if (batch == this.batch) {
+          ps.executeBatch()
+          con.commit()
+          batch = 0
+        }
+      }
+      ps.executeBatch()
+      con.commit()
+    } finally {
+      JdbcUtils.closeStatement(ps)
+      JdbcUtils.closeConnection(con)
+    }
+  }
+
   protected def getCon: Connection = {
     import scala.concurrent.ExecutionContext.Implicits.global
     Await.result(Future {
       DriverManager.getConnection(url, user, password)
-    }, 5 second)
+    }, 5.seconds)
   }
 
 }
