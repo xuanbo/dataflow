@@ -6,6 +6,7 @@
     "input": [
       {
         "name": "table",
+        "text": "物化视图",
         "type": "string",
         "component": "input",
         "required": true,
@@ -13,6 +14,7 @@
       },
       {
         "name": "select",
+        "text": "查询列",
         "type": "string",
         "component": "textarea",
         "required": true,
@@ -20,6 +22,7 @@
       },
       {
         "name": "groupBy",
+        "text": "分组",
         "type": "string",
         "component": "textarea",
         "required": false,
@@ -29,6 +32,7 @@
     "output": [
       {
         "name": "table",
+        "text": "物化视图",
         "type": "string",
         "component": "input",
         "required": true,

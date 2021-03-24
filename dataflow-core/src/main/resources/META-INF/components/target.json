@@ -6,6 +6,7 @@
     "input": [
       {
         "name": "table",
+        "text": "物化视图",
         "type": "string",
         "component": "input",
         "required": true,
@@ -15,6 +16,7 @@
     "output": [
       {
         "name": "url",
+        "text": "JDBC 连接",
         "type": "string",
         "component": "input",
         "required": true,
@@ -22,6 +24,7 @@
       },
       {
         "name": "user",
+        "text": "JDBC 用户名",
         "type": "string",
         "component": "input",
         "required": false,
@@ -29,6 +32,7 @@
       },
       {
         "name": "password",
+        "text": "JDBC 密码",
         "type": "string",
         "component": "password",
         "required": false,
@@ -36,6 +40,7 @@
       },
       {
         "name": "table",
+        "text": "表名",
         "type": "string",
         "component": "input",
         "required": true,
@@ -43,6 +48,7 @@
       },
       {
         "name": "partition",
+        "text": "分区数量",
         "type": "number",
         "component": "input",
         "required": false,
