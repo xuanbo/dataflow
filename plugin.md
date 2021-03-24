@@ -140,6 +140,7 @@ tk.fishfish.dataflow.algorithm.VarianceAlgorithm
     "input": [
       {
         "name": "table",
+        "text": "物化视图",
         "type": "string",
         "component": "input",
         "required": true,
@@ -147,6 +148,7 @@ tk.fishfish.dataflow.algorithm.VarianceAlgorithm
       },
       {
         "name": "col",
+        "text": "字段列",
         "type": "string",
         "component": "input",
         "required": true,
@@ -157,6 +159,7 @@ tk.fishfish.dataflow.algorithm.VarianceAlgorithm
     "output": [
       {
         "name": "table",
+        "text": "物化视图",
         "type": "string",
         "component": "input",
         "required": true,
