@@ -3,7 +3,7 @@ package tk.fishfish.dataflow.database
 import tk.fishfish.dataflow.database.driver.{IotdbDataHub, MysqlDataHub}
 import tk.fishfish.dataflow.entity.enums.JdbcProperty
 import tk.fishfish.dataflow.util.{Properties, Validation}
-import tk.fishfish.rest.BizException
+import tk.fishfish.rest.execption.BizException
 
 /**
  * 数据管理工厂
