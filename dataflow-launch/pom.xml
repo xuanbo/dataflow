@@ -88,11 +88,6 @@
                         </goals>
                         <configuration>
                             <relocations>
-                                <!-- 防止与 Spark 集群中的 jackson 冲突 -->
-                                <relocation>
-                                    <pattern>com.fasterxml</pattern>
-                                    <shadedPattern>shaded.com.fasterxml</shadedPattern>
-                                </relocation>
                                 <!-- 防止与 Spark 集群中的 gson 冲突 -->
                                 <relocation>
                                     <pattern>com.google.gson</pattern>
