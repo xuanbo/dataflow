@@ -1,0 +1,53 @@
+{
+  "group": "BASIC",
+  "name": "TRANSFORMER_SQL_CONTEXT",
+  "text": "上下文取值",
+  "argument": {
+    "input": [
+      {
+        "name": "table",
+        "text": "物化视图",
+        "type": "string",
+        "component": "input",
+        "required": true,
+        "remark": "读取物化视图"
+      },
+      {
+        "name": "contexts",
+        "text": "上下文",
+        "type": "array",
+        "component": "list",
+        "required": true,
+        "remark": "从上下文中取出数据，附加到结果集中",
+        "list": [
+          {
+            "name": "name",
+            "text": "名称",
+            "type": "string",
+            "component": "input",
+            "required": true,
+            "remark": "上下文取值名称"
+          },
+          {
+            "name": "alias",
+            "text": "别名",
+            "type": "string",
+            "component": "input",
+            "required": true,
+            "remark": "上下文取值后，赋值别名"
+          }
+        ]
+      }
+    ],
+    "output": [
+      {
+        "name": "table",
+        "text": "物化视图",
+        "type": "string",
+        "component": "input",
+        "required": true,
+        "remark": "结果物化视图"
+      }
+    ]
+  }
+}

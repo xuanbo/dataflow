@@ -2,6 +2,7 @@
 tk.fishfish.dataflow.core.SqlSource
 tk.fishfish.dataflow.core.SqlTransformer
 tk.fishfish.dataflow.core.SqlJoinTransformer
+tk.fishfish.dataflow.core.SqlContextTransformer
 tk.fishfish.dataflow.core.SqlFilter
 tk.fishfish.dataflow.core.LogTarget
 tk.fishfish.dataflow.core.SqlTarget

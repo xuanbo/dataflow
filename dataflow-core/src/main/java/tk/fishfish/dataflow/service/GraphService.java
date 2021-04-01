@@ -4,6 +4,8 @@ import tk.fishfish.dataflow.entity.Graph;
 import org.springframework.scheduling.annotation.Async;
 import tk.fishfish.mybatis.service.BaseService;
 
+import java.util.Map;
+
 /**
  * 流程图
  *
@@ -12,7 +14,6 @@ import tk.fishfish.mybatis.service.BaseService;
  */
 public interface GraphService extends BaseService<Graph> {
 
-    @Async
-    void run(String id);
+    void run(String id, Map<String, Object> context);
 
 }

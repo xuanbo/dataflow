@@ -77,66 +77,91 @@
 POST http://127.0.0.1:9090/v1/dag/run
 ```
 
-```json
+```json5
 {
-  "nodes": [
-    {
-      "id": "1",
-      "name": "SOURCE_SQL",
-      "text": "读",
-      "argument": {
-        "input": {
-          "url": "jdbc:iotdb://127.0.0.1:6667/",
-          "user": "root",
-          "password": "root",
-          "sql": "select * from root.demo"
-        },
-        "output": {
-          "table": "demo"
+  // 执行ID
+  "executionId": "1",
+  // 上下文
+  "context": {},
+  // DAG流程图
+  "graph": {
+    "nodes": [
+      {
+        "id": "1",
+        "name": "SOURCE_SQL",
+        "text": "读",
+        "argument": {
+          "input": {
+            "url": "jdbc:iotdb://127.0.0.1:6667/",
+            "user": "root",
+            "password": "root",
+            "sql": "select * from root.demo"
+          },
+          "output": {
+            "table": "demo1"
+          }
+        }
+      },
+      {
+        "id": "2",
+        "name": "TRANSFORMER_SQL",
+        "text": "转换",
+        "argument": {
+          "input": {
+            "table": "demo1",
+            "select": "Time AS time, `root.demo.temperature` AS temperature, `root.demo.hardware` AS hardware"
+          },
+          "output": {
+            "table": "demo2"
+          }
+        }
+      },
+      {
+        "id": "3",
+        "name": "TRANSFORMER_SQL_CONTEXT",
+        "text": "上下文",
+        "argument": {
+          "input": {
+            "table": "demo2",
+            "contexts": [
+              {
+                "name": "executionId",
+                "alias": "_executionId"
+              }
+            ]
+          },
+          "output": {
+            "table": "demo3"
+          }
+        }
+      },
+      {
+        "id": "4",
+        "name": "TARGET_LOG",
+        "text": "写",
+        "argument": {
+          "input": {
+            "table": "demo3"
+          },
+          "output": {}
         }
       }
-    },
-    {
-      "id": "2",
-      "name": "TRANSFORMER_SQL",
-      "text": "转换",
-      "argument": {
-        "input": {
-          "select": "Time AS time, `root.demo.temperature` AS temperature, `root.demo.hardware` AS hardware",
-          "table": "demo"
-        },
-        "output": {
-          "table": "demo1"
-        }
+    ],
+    "edges": [
+      {
+        "from": "1",
+        "to": "2"
+      },
+      {
+        "from": "2",
+        "to": "3"
+      },
+      {
+        "from": "3",
+        "to": "4"
       }
-    },
-    {
-      "id": "3",
-      "name": "TARGET_SQL",
-      "text": "写",
-      "argument": {
-        "input": {
-          "table": "demo1"
-        },
-        "output": {
-          "url": "jdbc:mysql://127.0.0.1:3306/dataflow",
-          "user": "root",
-          "password": "123456",
-          "table": "demo"
-        }
-      }
-    }
-  ],
-  "edges": [
-    {
-      "from": "1",
-      "to": "2"
-    },
-    {
-      "from": "2",
-      "to": "3"
-    }
-  ]
+    ]
+  }
 }
 ```
 

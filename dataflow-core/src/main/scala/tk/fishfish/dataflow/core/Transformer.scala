@@ -5,6 +5,8 @@ import org.apache.spark.sql.SparkSession
 import org.slf4j.{Logger, LoggerFactory}
 import tk.fishfish.dataflow.util.Validation
 
+import scala.collection.mutable
+
 /**
  * 转换
  *
@@ -116,6 +118,60 @@ class SqlJoinTransformer extends Transformer {
 
     logger.info(s"JOIN SQL: $sql, 输出表: $outTable")
     spark.sql(sql).createOrReplaceTempView(outTable)
+
+    // 缓存表
+    spark.sqlContext.cacheTable(outTable)
+    spark.sqlContext.table(outTable).count()
+
+    argument.tables = Seq(inTable, outTable)
+  }
+
+  override def setSparkSession(spark: SparkSession): Unit = this.spark = spark
+
+}
+
+class SqlContextTransformer extends Transformer {
+
+  private val logger: Logger = LoggerFactory.getLogger(classOf[SqlContextTransformer])
+
+  private var spark: SparkSession = _
+
+  override def name(): String = "TRANSFORMER_SQL_CONTEXT"
+
+  override def transform(argument: Argument): Unit = {
+    Validation.nonNull(argument.input, "配置 [argument.input] 不能为空")
+    Validation.nonNull(argument.output, "配置 [argument.output] 不能为空")
+
+    var inTable = argument.input.getString("table")
+    val contexts = argument.input.getSeq("contexts")
+    Validation.nonEmpty(inTable, "配置 [argument.input.table] 不能为空")
+    Validation.nonEmpty(contexts, "配置 [argument.input.contexts] 不能为空")
+
+    val cols = contexts.map { e =>
+      val name = e.getString("name")
+      val alias = e.getString("alias")
+      Validation.nonEmpty(name, "配置 [argument.input.contexts[*].name] 不能为空")
+      Validation.nonEmpty(alias, "配置 [argument.input.contexts[*].alias] 不能为空")
+
+      argument.context.get(name) match {
+        case Some(value) => s"$value AS $alias"
+        case None => s"NULL AS $alias"
+      }
+    }
+
+    var outTable = argument.output.getString("table")
+    Validation.nonEmpty(outTable, "配置 [argument.output.table] 不能为空")
+
+    inTable = s"${argument.namespace}_$inTable"
+    outTable = s"${argument.namespace}_$outTable"
+
+    val df = spark.sqlContext.table(inTable)
+    var selectExpr = mutable.Seq[String]()
+    df.schema.map(_.name).foreach(e => selectExpr = selectExpr :+ e)
+    cols.foreach(e => selectExpr = selectExpr :+ e)
+
+    logger.info(s"新增环境变量字段列: ${selectExpr.mkString(", ")}, 输入表: $inTable, 输出表: $outTable")
+    df.selectExpr(selectExpr: _*).createOrReplaceTempView(outTable)
 
     // 缓存表
     spark.sqlContext.cacheTable(outTable)

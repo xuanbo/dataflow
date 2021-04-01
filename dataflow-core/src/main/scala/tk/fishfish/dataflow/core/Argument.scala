@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude
 import tk.fishfish.json.util.JSON
 
 import scala.beans.BeanProperty
+import scala.collection.mutable
 
 /**
  * 配置
@@ -14,15 +15,32 @@ import scala.beans.BeanProperty
 @JsonInclude(JsonInclude.Include.NON_NULL)
 class Argument {
 
+  /**
+   * 命名空间，会用作表前缀，进行数据隔离
+   */
   @BeanProperty
   var namespace: String = _
 
+  /**
+   * 上下文
+   */
+  var context: mutable.Map[String, Any] = _
+
+  /**
+   * 输入参数
+   */
   @BeanProperty
   var input: Configuration = _
 
+  /**
+   * 输出参数
+   */
   @BeanProperty
   var output: Configuration = _
 
+  /**
+   * 物化视图，会缓存数据，整个生命周期结束后会清除
+   */
   @BeanProperty
   var tables: Seq[String] = _
 

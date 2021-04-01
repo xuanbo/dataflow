@@ -3,17 +3,17 @@ package tk.fishfish.dataflow.service.impl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import tk.fishfish.dataflow.dag.Dag;
+import scala.collection.JavaConversions;
 import tk.fishfish.dataflow.dag.DagExecutor;
-import tk.fishfish.dataflow.entity.Execution;
+import tk.fishfish.dataflow.dag.ExecutionParam;
 import tk.fishfish.dataflow.entity.Graph;
-import tk.fishfish.dataflow.entity.enums.ExecuteStatus;
-import tk.fishfish.dataflow.service.ExecutionService;
 import tk.fishfish.dataflow.service.GraphService;
 import tk.fishfish.json.util.JSON;
 import tk.fishfish.mybatis.service.impl.BaseServiceImpl;
 
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * 流程图
@@ -26,29 +26,26 @@ import java.util.Date;
 @RequiredArgsConstructor
 public class GraphServiceImpl extends BaseServiceImpl<Graph> implements GraphService {
 
-    private final ExecutionService executionService;
     private final DagExecutor executor;
 
     @Override
-    public void run(String id) {
+    public void run(String id, Map<String, Object> context) {
         Graph graph = this.findById(id);
         if (graph == null) {
             log.warn("流程图不存在: {}", id);
             return;
         }
-        // 运行记录
-        Execution execution = new Execution();
-        execution.setGraphId(id);
-        execution.setGraphContent(graph.getContent());
-        executionService.insert(execution);
-        String executionId = execution.getId();
+        String executionId = generateId();
+        if (context == null) {
+            context = new HashMap<>();
+        }
         // 运行
-        String message = executor.run(executionId, Dag.apply(JSON.read(graph.getContent(), tk.fishfish.dataflow.dag.Graph.class)));
-        // 运行结果
-        execution = new Execution();
-        execution.setId(executionId);
-        execution.setStatus(message == null ? ExecuteStatus.SUCCESS : ExecuteStatus.ERROR);
-        execution.setMessage(message);
+        executor.run(new ExecutionParam(
+                executionId,
+                graph.getId(),
+                JavaConversions.mapAsScalaMap(context),
+                JSON.read(graph.getContent(), tk.fishfish.dataflow.dag.Graph.class)
+        ));
     }
 
     @Override

@@ -13,6 +13,8 @@ import tk.fishfish.mybatis.controller.BaseController;
 import tk.fishfish.mybatis.domain.Page;
 import tk.fishfish.mybatis.domain.Query;
 
+import java.util.Map;
+
 /**
  * 流程图
  *
@@ -32,8 +34,8 @@ public class GraphController extends BaseController<Graph> {
     }
 
     @PostMapping("/{id}/run")
-    public void run(@PathVariable String id) {
-        graphService.run(id);
+    public void run(@PathVariable String id, @RequestBody(required = false) Map<String, Object> context) {
+        graphService.run(id, context);
     }
 
 }
