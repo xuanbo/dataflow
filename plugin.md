@@ -15,24 +15,27 @@ dataflow-plugin 为插件开发模块，约定自定义算法组件均维护到�
 ```java
 package tk.fishfish.dataflow.algorithm;
 
-import tk.fishfish.dataflow.core.Algorithm;
-import tk.fishfish.dataflow.core.Argument;
-import tk.fishfish.dataflow.util.Validation;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.spark.api.java.function.Function;
+import org.apache.spark.api.java.function.FlatMapFunction;
 import org.apache.spark.mllib.linalg.Vector;
 import org.apache.spark.mllib.linalg.Vectors;
 import org.apache.spark.mllib.stat.Statistics;
 import org.apache.spark.rdd.RDD;
+import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
 import scala.Serializable;
 import scala.collection.JavaConverters;
 import scala.collection.Seq;
+import tk.fishfish.dataflow.core.Algorithm;
+import tk.fishfish.dataflow.core.Argument;
+import tk.fishfish.dataflow.util.Validation;
 
 import java.util.Collections;
-import java.util.Objects;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * 方差
@@ -70,16 +73,33 @@ public class VarianceAlgorithm implements Algorithm {
         log.info("计算 {}-{} 方差, 输出表: {}", inTable, col, outTable);
 
         // 组装求方差列数据
-        RDD<Vector> rdd = spark.sqlContext().table(inTable).javaRDD().map((Function<Row, Vector>) row -> {
-            Object value = row.getAs(col);
-            if (value == null) {
-                return null;
-            }
-            return Vectors.dense(Double.parseDouble(value.toString()));
-        }).filter((Function<Vector, Boolean>) Objects::nonNull).rdd();
+        RDD<Vector> rdd = spark.sqlContext().table(inTable).javaRDD()
+                .mapPartitions((FlatMapFunction<Iterator<Row>, Vector>) iterator -> {
+                    List<Vector> vectors = new LinkedList<>();
+                    iterator.forEachRemaining(row -> {
+                        Object value = row.getAs(col);
+                        if (value == null) {
+                            return;
+                        }
+                        Vector vector = Vectors.dense(Double.parseDouble(value.toString()));
+                        vectors.add(vector);
+                    });
+                    return vectors.iterator();
+                }).rdd();
 
         // 计算方差
-        double variance = Statistics.colStats(rdd).variance().apply(0);
+        Double variance;
+        rdd.cache();
+        try {
+            long count = rdd.count();
+            if (count == 0) {
+                variance = null;
+            } else {
+                variance = Statistics.colStats(rdd).variance().apply(0);
+            }
+        } finally {
+            rdd.unpersist(false);
+        }
         log.info("计算 {}-{} 方差值: {}", inTable, col, variance);
 
         // 结果注册为临时表
@@ -87,9 +107,10 @@ public class VarianceAlgorithm implements Algorithm {
         row.setValue(variance);
         spark.createDataFrame(Collections.singletonList(row), VarianceRow.class).toDF(col).createOrReplaceTempView(outTable);
 
-        // 缓存
-        spark.sqlContext().table(outTable).cache();
-        spark.sqlContext().table(outTable).count();
+        // 缓存表
+        Dataset<Row> ds = spark.sqlContext().table(outTable);
+        ds.cache();
+        ds.count();
 
         // 输出表
         Seq<String> seq = JavaConverters.asScalaIteratorConverter(Collections.singletonList(outTable).iterator()).asScala().toSeq();

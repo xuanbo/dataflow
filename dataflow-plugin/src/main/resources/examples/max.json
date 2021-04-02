@@ -1,0 +1,56 @@
+{
+  "nodes": [
+    {
+      "id": "1",
+      "name": "SOURCE_SQL",
+      "text": "读",
+      "argument": {
+        "input": {
+          "url": "jdbc:mysql://127.0.0.1:3306/dataflow",
+          "user": "root",
+          "password": "123456",
+          "sql": "select * from test"
+        },
+        "output": {
+          "table": "test1"
+        }
+      }
+    },
+    {
+      "id": "2",
+      "name": "ALGORITHM_MAX",
+      "text": "最大值",
+      "argument": {
+        "input": {
+          "table": "test1",
+          "col": "temperature"
+        },
+        "output": {
+          "table": "test2"
+        }
+      }
+    },
+    {
+      "id": "3",
+      "name": "TARGET_LOG",
+      "text": "写",
+      "argument": {
+        "input": {
+          "table": "test2"
+        },
+        "output": {
+        }
+      }
+    }
+  ],
+  "edges": [
+    {
+      "from": "1",
+      "to": "2"
+    },
+    {
+      "from": "2",
+      "to": "3"
+    }
+  ]
+}

@@ -1,2 +1,8 @@
 # 自定义实现
 tk.fishfish.dataflow.algorithm.VarianceAlgorithm
+tk.fishfish.dataflow.algorithm.MaxAlgorithm
+tk.fishfish.dataflow.algorithm.MinAlgorithm
+tk.fishfish.dataflow.algorithm.MeanAlgorithm
+tk.fishfish.dataflow.algorithm.CountAlgorithm
+tk.fishfish.dataflow.algorithm.MedianAlgorithm
+tk.fishfish.dataflow.algorithm.SumAlgorithm

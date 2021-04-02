@@ -1,7 +1,7 @@
 {
   "group": "ALGORITHM",
-  "name": "ALGORITHM_VARIANCE",
-  "text": "方差",
+  "name": "ALGORITHM_MEDIAN",
+  "text": "中位数",
   "argument": {
     "input": [
       {
@@ -18,7 +18,15 @@
         "type": "string",
         "component": "input",
         "required": true,
-        "remark": "求方差的字段列，必须是数值"
+        "remark": "求中位数的字段列，必须是数值"
+      },
+      {
+        "name": "partition",
+        "text": "分区",
+        "type": "number",
+        "component": "input",
+        "required": false,
+        "remark": "分区数量，默认4，该数值会影响计算性能"
       }
     ],
     "output": [

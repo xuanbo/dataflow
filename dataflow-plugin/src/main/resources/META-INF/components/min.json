@@ -1,7 +1,7 @@
 {
   "group": "ALGORITHM",
-  "name": "ALGORITHM_VARIANCE",
-  "text": "方差",
+  "name": "ALGORITHM_MIN",
+  "text": "最小值",
   "argument": {
     "input": [
       {
@@ -18,7 +18,7 @@
         "type": "string",
         "component": "input",
         "required": true,
-        "remark": "求方差的字段列，必须是数值"
+        "remark": "求最小值的字段列，必须是数值"
       }
     ],
     "output": [
