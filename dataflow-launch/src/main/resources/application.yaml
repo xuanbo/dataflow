@@ -36,4 +36,4 @@ mybatis:
 
 logging:
   level:
-    tk.fishfish: DEBUG
+    tk.fishfish: INFO

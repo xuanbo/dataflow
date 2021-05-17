@@ -1,7 +1,6 @@
-package tk.fishfish.dataflow.database.driver
+package tk.fishfish.dataflow.sink
 
 import com.mysql.cj.conf.PropertyKey
-import tk.fishfish.dataflow.database.SqlDataHub
 import tk.fishfish.dataflow.util.{Properties, Validation}
 
 /**
@@ -10,7 +9,7 @@ import tk.fishfish.dataflow.util.{Properties, Validation}
  * @author 奔波儿灞
  * @version 1.0.0
  */
-class MysqlDataHub(val props: Properties) extends SqlDataHub(props) {
+class MysqlSink(val props: Properties) extends SqlSink(props) {
 
   override protected val url: String = {
     var url = props.getString("url")

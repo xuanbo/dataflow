@@ -2,7 +2,7 @@ package tk.fishfish.dataflow.core
 
 import org.apache.spark.sql.SparkSession
 import org.slf4j.{Logger, LoggerFactory}
-import tk.fishfish.dataflow.database.DataHubFactory
+import tk.fishfish.dataflow.sink.SinkFactory
 import tk.fishfish.dataflow.entity.enums.JdbcProperty
 import tk.fishfish.dataflow.util.{Properties, Validation}
 
@@ -72,11 +72,11 @@ class SqlTarget extends Target {
     val df = spark.table(inTable)
     val columns = df.schema.map(_.name)
     df.repartition(partition).foreachPartition { rows =>
-      val dataHub = DataHubFactory.create(props)
+      val sink = SinkFactory.create(props)
       mode match {
-        case "insert" => dataHub.insert(outTable, columns, rows)
-        case "update" => dataHub.update(outTable, columns, rows)
-        case _ => dataHub.insert(outTable, columns, rows)
+        case "insert" => sink.insert(outTable, columns, rows)
+        case "update" => sink.update(outTable, columns, rows)
+        case _ => sink.insert(outTable, columns, rows)
       }
     }
   }

@@ -1,4 +1,4 @@
-package tk.fishfish.dataflow.database
+package tk.fishfish.dataflow.sink
 
 import org.apache.spark.sql.Row
 import org.slf4j.{Logger, LoggerFactory}
@@ -11,12 +11,12 @@ import scala.concurrent.duration.DurationInt
 import scala.concurrent.{Await, Future}
 
 /**
- * 通用SQL数据管理
+ * 通用SQL实现
  *
  * @author 奔波儿灞
  * @version 1.0.0
  */
-abstract class SqlDataHub(props: Properties) extends DataHub {
+abstract class SqlSink(props: Properties) extends Sink {
 
   protected val logger: Logger = LoggerFactory.getLogger(getClass)
 

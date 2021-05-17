@@ -1,8 +1,7 @@
-package tk.fishfish.dataflow.database.driver
+package tk.fishfish.dataflow.sink
 
 import org.apache.spark.sql.Row
 import org.springframework.jdbc.support.JdbcUtils
-import tk.fishfish.dataflow.database.SqlDataHub
 import tk.fishfish.dataflow.util.{CollectionUtils, Properties}
 
 import java.sql.{Connection, PreparedStatement}
@@ -13,7 +12,7 @@ import java.sql.{Connection, PreparedStatement}
  * @author 奔波儿灞
  * @version 1.0.0
  */
-class IotdbDataHub(val props: Properties) extends SqlDataHub(props) {
+class IotdbSink(val props: Properties) extends SqlSink(props) {
 
   override def insert(table: String, columns: Seq[String], rows: Iterator[Row]): Unit = {
     if (CollectionUtils.isEmpty(rows) || CollectionUtils.isEmpty(columns)) {
