@@ -1,6 +1,7 @@
 package tk.fishfish.dataflow.core
 
 import org.apache.spark.sql.SparkSession
+import org.springframework.core.env.Environment
 
 /**
  * 任务
@@ -23,6 +24,13 @@ trait Task extends Serializable {
    * @param spark SparkSession
    */
   def setSparkSession(spark: SparkSession): Unit
+
+  /**
+   * 回调Environment
+   *
+   * @param env Environment
+   */
+  def setEnv(env: Environment): Unit = {}
 
 }
 

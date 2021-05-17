@@ -32,6 +32,7 @@
     </dependencies>
 
     <build>
+        <finalName>dataflow</finalName>
         <plugins>
             <!-- This plugin adds all dependencies to fat JAR file during 'package' command -->
             <plugin>

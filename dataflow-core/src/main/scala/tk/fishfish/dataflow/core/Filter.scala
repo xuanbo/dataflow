@@ -3,7 +3,7 @@ package tk.fishfish.dataflow.core
 import org.apache.commons.lang3.StringUtils
 import org.apache.spark.sql.SparkSession
 import org.slf4j.{Logger, LoggerFactory}
-import tk.fishfish.dataflow.util.Validation
+import tk.fishfish.dataflow.util.{StringTemplate, Validation}
 
 /**
  * 过滤
@@ -50,14 +50,16 @@ class SqlFilter extends Filter {
     if (StringUtils.isNotEmpty(limit)) {
       sql = sql + s" LIMIT $limit"
     }
+
+    // 变量替换
+    sql = StringTemplate.render(sql, argument.context.toMap)
+
     logger.info(s"过滤SQL: $sql, 输出表: $outTable")
     spark.sql(sql).createOrReplaceTempView(outTable)
 
     // 缓存表
     spark.sqlContext.cacheTable(outTable)
     spark.sqlContext.table(outTable).count()
-
-    argument.tables = Seq(inTable, outTable)
   }
 
   override def setSparkSession(spark: SparkSession): Unit = this.spark = spark

@@ -38,12 +38,6 @@ class Argument {
   @BeanProperty
   var output: Configuration = _
 
-  /**
-   * 物化视图，会缓存数据，整个生命周期结束后会清除
-   */
-  @BeanProperty
-  var tables: Seq[String] = _
-
 }
 
 class Configuration extends java.util.HashMap[String, Any] {

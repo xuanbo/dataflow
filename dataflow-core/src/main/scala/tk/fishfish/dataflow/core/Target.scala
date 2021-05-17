@@ -32,8 +32,6 @@ class LogTarget extends Target {
 
     table = s"${argument.namespace}_$table"
     spark.table(table).show()
-
-    argument.tables = Seq(table)
   }
 
   override def setSparkSession(spark: SparkSession): Unit = this.spark = spark
@@ -59,6 +57,7 @@ class SqlTarget extends Target {
     val user = argument.output.getString("user")
     val password = argument.output.getString("password")
     val outTable = argument.output.getString("table")
+    val mode = argument.output.getString("mode", "insert")
     val partition = argument.output.getInt("partition", 4)
     Validation.nonEmpty(url, "配置 [argument.output.url] 不能为空")
     Validation.nonEmpty(outTable, "配置 [argument.output.table] 不能为空")
@@ -72,9 +71,14 @@ class SqlTarget extends Target {
       .option(JdbcProperty.PASSWORD.key(), password)
     val df = spark.table(inTable)
     val columns = df.schema.map(_.name)
-    df.repartition(partition).foreachPartition(rows => DataHubFactory.create(props).insert(outTable, columns, rows))
-
-    argument.tables = Seq(inTable)
+    df.repartition(partition).foreachPartition { rows =>
+      val dataHub = DataHubFactory.create(props)
+      mode match {
+        case "insert" => dataHub.insert(outTable, columns, rows)
+        case "update" => dataHub.update(outTable, columns, rows)
+        case _ => dataHub.insert(outTable, columns, rows)
+      }
+    }
   }
 
   override def setSparkSession(spark: SparkSession): Unit = this.spark = spark

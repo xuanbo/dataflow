@@ -8,6 +8,7 @@ import tk.fishfish.dataflow.entity.Execution
 import tk.fishfish.dataflow.entity.enums.ExecuteStatus
 import tk.fishfish.dataflow.exception.DagException
 import tk.fishfish.dataflow.service.{ExecutionService, TaskService}
+import tk.fishfish.dataflow.util.SparkUtils
 import tk.fishfish.dataflow.{core, entity}
 import tk.fishfish.json.util.JSON
 
@@ -44,11 +45,11 @@ class DefaultDagExecutor(val spark: SparkSession, val tasks: Map[String, core.Ta
     param.context += ("graphId" -> param.graphId)
     param.context += ("executionId" -> param.executionId)
     val namespace = s"n_${autoIncrement.incrementAndGet()}"
-    val dag = Dag(param.graph)
     val tables = mutable.Set[String]()
     var status: ExecuteStatus = null
     var message: String = null
     try {
+      val dag = Dag(param.graph)
       while (!dag.isComplete) {
         val nodes = dag.poll()
         for (node <- nodes) {
@@ -56,7 +57,7 @@ class DefaultDagExecutor(val spark: SparkSession, val tasks: Map[String, core.Ta
           try {
             node.argument.namespace = namespace
             node.argument.context = param.context
-            tables ++= runTask(node)
+            runTask(node)
             status = ExecuteStatus.SUCCESS
           } catch {
             case e: Exception =>
@@ -72,32 +73,23 @@ class DefaultDagExecutor(val spark: SparkSession, val tasks: Map[String, core.Ta
     } catch {
       case e: Exception => {
         logger.warn(s"任务流运行失败: ${param.executionId}", e)
+        message = e.getMessage
       }
     } finally {
       // 清理临时表
-      for (table <- tables) {
-        spark.sql(s"DROP TABLE IF EXISTS $table")
-      }
+      SparkUtils.cleanup(spark, namespace)
       logger.info("任务流结束: {}", param.executionId)
       endExecution(param.executionId, message)
     }
   }
 
-  private[this] def runTask(node: Node): Seq[String] = {
+  private[this] def runTask(node: Node): Unit = {
     tasks.get(node.name) match {
       case Some(task) => task match {
-        case source: Source =>
-          source.read(node.argument)
-          node.argument.tables
-        case transformer: Transformer =>
-          transformer.transform(node.argument)
-          node.argument.tables
-        case filter: Filter =>
-          filter.filter(node.argument)
-          node.argument.tables
-        case target: Target =>
-          target.write(node.argument)
-          node.argument.tables
+        case source: Source => source.read(node.argument)
+        case transformer: Transformer => transformer.transform(node.argument)
+        case filter: Filter => filter.filter(node.argument)
+        case target: Target => target.write(node.argument)
         case _ => throw new DagException(s"节点不支持的类型: ${node.name}")
       }
       case None => throw new DagException(s"节点不支持的类型: ${node.name}")

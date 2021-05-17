@@ -67,7 +67,7 @@
         "text": "过滤",
         "type": "string",
         "component": "textarea",
-        "required": true,
+        "required": false,
         "remark": "SQL WHERE 过滤语句，无需写 WHERE 关键字"
       },
       {

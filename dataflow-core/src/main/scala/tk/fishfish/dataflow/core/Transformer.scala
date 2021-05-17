@@ -3,7 +3,7 @@ package tk.fishfish.dataflow.core
 import org.apache.commons.lang3.StringUtils
 import org.apache.spark.sql.SparkSession
 import org.slf4j.{Logger, LoggerFactory}
-import tk.fishfish.dataflow.util.Validation
+import tk.fishfish.dataflow.util.{StringTemplate, Validation}
 
 import scala.collection.mutable
 
@@ -46,14 +46,16 @@ class SqlTransformer extends Transformer {
     if (StringUtils.isNotEmpty(groupBy)) {
       sql = sql + s" GROUP BY $groupBy"
     }
+
+    // 变量替换
+    sql = StringTemplate.render(sql, argument.context.toMap)
+
     logger.info(s"转换SQL: $sql, 输出表: $outTable")
     spark.sql(sql).createOrReplaceTempView(outTable)
 
     // 缓存表
     spark.sqlContext.cacheTable(outTable)
     spark.sqlContext.table(outTable).count()
-
-    argument.tables = Seq(inTable, outTable)
   }
 
   override def setSparkSession(spark: SparkSession): Unit = this.spark = spark
@@ -116,14 +118,15 @@ class SqlJoinTransformer extends Transformer {
       sql = sql + s" LIMIT $limit"
     }
 
+    // 变量替换
+    sql = StringTemplate.render(sql, argument.context.toMap)
+
     logger.info(s"JOIN SQL: $sql, 输出表: $outTable")
     spark.sql(sql).createOrReplaceTempView(outTable)
 
     // 缓存表
     spark.sqlContext.cacheTable(outTable)
     spark.sqlContext.table(outTable).count()
-
-    argument.tables = Seq(inTable, outTable)
   }
 
   override def setSparkSession(spark: SparkSession): Unit = this.spark = spark
@@ -176,8 +179,6 @@ class SqlContextTransformer extends Transformer {
     // 缓存表
     spark.sqlContext.cacheTable(outTable)
     spark.sqlContext.table(outTable).count()
-
-    argument.tables = Seq(inTable, outTable)
   }
 
   override def setSparkSession(spark: SparkSession): Unit = this.spark = spark

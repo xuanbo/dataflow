@@ -1,7 +1,7 @@
 {
   "group": "BASIC",
   "name": "TARGET_SQL",
-  "text": "源端",
+  "text": "目标端",
   "argument": {
     "input": [
       {

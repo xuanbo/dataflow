@@ -4,6 +4,7 @@ import org.apache.spark.sql.SparkSession
 import org.slf4j.{Logger, LoggerFactory}
 import org.springframework.boot.context.properties.{ConfigurationProperties, EnableConfigurationProperties}
 import org.springframework.context.annotation.{Bean, Configuration}
+import org.springframework.core.env.Environment
 import org.springframework.validation.annotation.Validated
 import tk.fishfish.dataflow.core.Task
 import tk.fishfish.dataflow.dag.{DagExecutor, DefaultDagExecutor}
@@ -42,12 +43,13 @@ class SparkConfiguration {
   }
 
   @Bean
-  def tasks(spark: SparkSession): Seq[Task] = {
+  def tasks(spark: SparkSession, env: Environment): Seq[Task] = {
     var seq = mutable.Seq[Task]()
     logger.info(s"加载自定义组件: ${classOf[Task].getName}, classloader: ${classOf[Task].getClassLoader.getClass.getName}")
     import scala.collection.JavaConversions.asScalaIterator
     ServiceLoader.load(classOf[Task], classOf[Task].getClassLoader).iterator().foreach { e =>
       logger.info(s"自定义组件: ${e.name()}, class: ${e.getClass.getName}")
+      e.setEnv(env)
       e.setSparkSession(spark)
       seq = seq :+ e
     }

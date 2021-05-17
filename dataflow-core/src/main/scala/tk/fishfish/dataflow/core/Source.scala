@@ -5,7 +5,7 @@ import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.execution.datasources.jdbc.JDBCOptions
 import org.slf4j.{Logger, LoggerFactory}
 import tk.fishfish.dataflow.exception.DagException
-import tk.fishfish.dataflow.util.Validation
+import tk.fishfish.dataflow.util.{StringTemplate, Validation}
 
 /**
  * 源端
@@ -34,12 +34,15 @@ class SqlSource extends Source {
     val url = argument.input.getString("url")
     val user = argument.input.getString("user")
     val password = argument.input.getString("password")
-    val sql = argument.input.getString("sql")
+    var sql = argument.input.getString("sql")
     Validation.nonEmpty(url, "配置 [argument.input.url] 不能为空")
     Validation.nonEmpty(sql, "配置 [argument.input.sql] 不能为空")
 
     var table = argument.output.getString("table")
-    Validation.nonEmpty(sql, "配置 [argument.output.sql] 不能为空")
+    Validation.nonEmpty(table, "配置 [argument.output.table] 不能为空")
+
+    // 变量替换
+    sql = StringTemplate.render(sql, argument.context.toMap)
 
     table = s"${argument.namespace}_$table"
     logger.info(s"查询SQL: $sql, 输出表: $table")
@@ -60,8 +63,8 @@ class SqlSource extends Source {
         .option("user", user)
         .option("password", password)
         .option(JDBCOptions.JDBC_QUERY_STRING, sql)
-        .option(JDBCOptions.JDBC_BATCH_FETCH_SIZE, 1024)
         .option(JDBCOptions.JDBC_NUM_PARTITIONS, 4)
+        .option(JDBCOptions.JDBC_BATCH_FETCH_SIZE, 1024)
         .load()
         .createOrReplaceTempView(table)
     }
@@ -69,8 +72,6 @@ class SqlSource extends Source {
     // 缓存表
     spark.sqlContext.cacheTable(table)
     spark.sqlContext.table(table).count()
-
-    argument.tables = Seq(table)
   }
 
   private def determineDriverClass(url: String): String = {

@@ -8,8 +8,6 @@ import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
 import scala.Serializable;
-import scala.collection.JavaConverters;
-import scala.collection.Seq;
 import tk.fishfish.dataflow.core.Algorithm;
 import tk.fishfish.dataflow.core.Argument;
 import tk.fishfish.dataflow.util.Validation;
@@ -91,10 +89,6 @@ public class SumAlgorithm implements Algorithm {
         Dataset<Row> ds = spark.sqlContext().table(outTable);
         ds.cache();
         ds.count();
-
-        // 输出表
-        Seq<String> seq = JavaConverters.asScalaIteratorConverter(Collections.singletonList(outTable).iterator()).asScala().toSeq();
-        argument.setTables(seq);
     }
 
     @Override

@@ -1,5 +1,7 @@
 package tk.fishfish.dataflow.core;
 
+import org.springframework.core.env.Environment;
+
 /**
  * 算法
  *
@@ -19,5 +21,9 @@ public interface Algorithm extends Transformer {
      * @param argument 参数
      */
     void compute(Argument argument);
+
+    @Override
+    default void setEnv(Environment env) {
+    }
 
 }

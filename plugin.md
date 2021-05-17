@@ -26,8 +26,6 @@ import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
 import scala.Serializable;
-import scala.collection.JavaConverters;
-import scala.collection.Seq;
 import tk.fishfish.dataflow.core.Algorithm;
 import tk.fishfish.dataflow.core.Argument;
 import tk.fishfish.dataflow.util.Validation;
@@ -111,10 +109,6 @@ public class VarianceAlgorithm implements Algorithm {
         Dataset<Row> ds = spark.sqlContext().table(outTable);
         ds.cache();
         ds.count();
-
-        // 输出表
-        Seq<String> seq = JavaConverters.asScalaIteratorConverter(Collections.singletonList(outTable).iterator()).asScala().toSeq();
-        argument.setTables(seq);
     }
 
     @Override
@@ -173,7 +167,7 @@ tk.fishfish.dataflow.algorithm.VarianceAlgorithm
         "type": "string",
         "component": "input",
         "required": true,
-        "remark": "求方差的字段列，必须是浮点型数据"
+        "remark": "求方差的字段列，必须是数值数据"
       }
     ],
     // 输出
