@@ -1,7 +1,9 @@
 package tk.fishfish.dataflow.util
 
-import org.apache.spark.sql.SparkSession
-import org.slf4j.{Logger, LoggerFactory}
+import org.apache.spark.sql.catalyst.analysis.UnresolvedRelation
+import org.apache.spark.sql.{DataFrame, SparkSession}
+import tk.fishfish.dataflow.task.Argument
+import tk.fishfish.json.util.JSON
 
 /**
  * Spark工具类
@@ -11,21 +13,28 @@ import org.slf4j.{Logger, LoggerFactory}
  */
 object SparkUtils {
 
-  private val logger: Logger = LoggerFactory.getLogger(SparkUtils.getClass)
+  def takeJSON(df: DataFrame, limit: Int = 10): String = {
+    val list = df.take(limit).map { row =>
+      row.schema.map { field =>
+        (field.name, row.getAs(field.name))
+      }.toMap
+    }
+    JSON.write(list)
+  }
 
-  def cleanup(spark: SparkSession, namespace: String): Unit = {
-    spark.sql(s"SHOW TABLES")
-      .collect()
-      .map(_.get(1).asInstanceOf[String])
-      .filter(_.startsWith(s"${namespace}_"))
-      .foreach { name =>
-        logger.info("清理临时表: {}", name)
-        try {
-          spark.sql(s"DROP TABLE IF EXISTS $name")
-        } catch {
-          case e: Exception => logger.warn(s"清理临时表 ${name} 失败", e)
-        }
-      }
+  def createDatabase(spark: SparkSession, db: String): Unit = spark.sql(s"CREATE DATABASE IF NOT EXISTS $db")
+
+  def dropDatabase(spark: SparkSession, db: String): Unit = spark.sql(s"DROP DATABASE IF EXISTS $db CASCADE")
+
+  def parseTables(spark: SparkSession, query: String): Array[String] = {
+    val logicalPlan = spark.sessionState.sqlParser.parsePlan(query)
+    logicalPlan.collect { case r: UnresolvedRelation => r.tableName }.toArray
+  }
+
+  def setTaskId(spark: SparkSession, argument: Argument): Unit = {
+    argument.context.get("taskId").foreach { taskId =>
+      spark.sparkContext.setLocalProperty("taskId", taskId.toString)
+    }
   }
 
 }

@@ -1,0 +1,51 @@
+{
+  "group": "BASIC",
+  "name": "DATABASE_TARGET",
+  "text": "数据库目标端",
+  "argument": {
+    "input": [
+      {
+        "name": "table",
+        "text": "表",
+        "type": "string",
+        "component": "input",
+        "required": true,
+        "remark": "读取表"
+      }
+    ],
+    "output": [
+      {
+        "name": "url",
+        "text": "JDBC 连接",
+        "type": "string",
+        "component": "input",
+        "required": true,
+        "remark": "JDBC 连接\r\njdbc:mysql://127.0.0.1:3306/test\r\njdbc:es://http://127.0.0.1:9200\r\njdbc:dm://127.0.0.1:5236\r\njdbc:sqlserver://127.0.0.1:1433;DatabaseName=testdb\r\njdbc:oracle:thin:@127.0.0.1:1521:testdb\r\njdbc:postgresql://127.0.0.1:5432/postgres"
+      },
+      {
+        "name": "user",
+        "text": "JDBC 用户名",
+        "type": "string",
+        "component": "input",
+        "required": false,
+        "remark": "JDBC 用户名"
+      },
+      {
+        "name": "password",
+        "text": "JDBC 密码",
+        "type": "string",
+        "component": "password",
+        "required": false,
+        "remark": "JDBC 密码"
+      },
+      {
+        "name": "table",
+        "text": "表名",
+        "type": "string",
+        "component": "input",
+        "required": true,
+        "remark": "目标端写入数据库表名"
+      }
+    ]
+  }
+}

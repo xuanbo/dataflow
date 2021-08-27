@@ -1,0 +1,18 @@
+{
+  "group": "BASIC",
+  "name": "SHELL",
+  "text": "执行shell命令",
+  "argument": {
+    "input": [
+      {
+        "name": "command",
+        "text": "命令",
+        "type": "string",
+        "component": "textarea",
+        "required": true,
+        "remark": "需要执行的shell命令，比如：python /some/path/xxx.py"
+      }
+    ],
+    "output": []
+  }
+}

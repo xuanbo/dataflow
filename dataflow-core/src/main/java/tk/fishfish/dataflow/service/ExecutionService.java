@@ -10,4 +10,7 @@ import tk.fishfish.mybatis.service.BaseService;
  * @version 1.0.0
  */
 public interface ExecutionService extends BaseService<Execution> {
+
+    Execution detail(String id);
+
 }

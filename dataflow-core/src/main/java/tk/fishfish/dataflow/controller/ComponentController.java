@@ -31,7 +31,13 @@ import java.util.stream.Collectors;
 @RequestMapping("/v1/component")
 public class ComponentController implements CommandLineRunner {
 
+    private final List<Map<String, Object>> list = new ArrayList<>();
     private List<Map<String, Object>> tree;
+
+    @GetMapping("/list")
+    public List<Map<String, Object>> list() {
+        return list;
+    }
 
     @GetMapping("/tree")
     public List<Map<String, Object>> tree() {
@@ -49,10 +55,9 @@ public class ComponentController implements CommandLineRunner {
             log.info("组件: {}", resource.getFilename());
             byte[] bytes = FileCopyUtils.copyToByteArray(resource.getInputStream());
             Map<String, Object> component = JSON.readMap(new String(bytes));
+            this.list.add(component);
             String groupName = component.getOrDefault("group", ComponentGroup.OTHER.name()).toString();
-            ComponentGroup group = ComponentGroup.valueOf(groupName);
-            List<Map<String, Object>> list = tree.computeIfAbsent(group, (key) -> new ArrayList<>());
-            list.add(component);
+            tree.computeIfAbsent(ComponentGroup.valueOf(groupName), (key) -> new ArrayList<>()).add(component);
         }
         this.tree = tree.entrySet().stream().map(entry -> {
             Map<String, Object> map = new HashMap<>(4);

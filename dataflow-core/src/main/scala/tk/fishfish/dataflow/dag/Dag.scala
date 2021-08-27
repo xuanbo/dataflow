@@ -4,15 +4,16 @@ import com.fasterxml.jackson.annotation.JsonIgnore
 import com.google.common.collect.{HashMultimap, SetMultimap, Sets}
 import org.apache.commons.lang3.StringUtils
 import tk.fishfish.dataflow.exception.DagException
-import tk.fishfish.dataflow.util.CollectionUtils
+import tk.fishfish.dataflow.util.{CollectionUtils, LockUtils}
 
 import java.util
+import java.util.concurrent.locks.ReentrantReadWriteLock
 import java.util.function.Predicate
-import scala.beans.BeanProperty
 import scala.collection.mutable
+import scala.collection.mutable.ListBuffer
 
 /**
- * 描述
+ * DAG定义
  *
  * @author 奔波儿灞
  * @version 1.0.0
@@ -22,14 +23,12 @@ class Dag {
   /**
    * 节点
    */
-  @BeanProperty
-  val nodes: java.util.Set[Node] = Sets.newHashSet()
+  private val nodes: java.util.Set[Node] = Sets.newHashSet()
 
   /**
    * 边
    */
-  @BeanProperty
-  val edges: java.util.Set[Edge] = Sets.newHashSet()
+  private val edges: java.util.Set[Edge] = Sets.newHashSet()
 
   /**
    * 节点前驱
@@ -37,26 +36,35 @@ class Dag {
   private val predecessors: SetMultimap[Node, Node] = HashMultimap.create[Node, Node]
 
   /**
+   * 读写锁
+   */
+  private val readWriteLock = new ReentrantReadWriteLock()
+
+  /**
    * 返回下一个要执行的节点
    *
    * @return 节点
    */
   def poll(): Seq[Node] = {
-    var res = mutable.Seq[Node]()
+    val res = new ListBuffer[Node]()
     import scala.collection.JavaConversions.asScalaSet
-    for (node <- nodes) {
-      val pres = predecessors.get(node)
-      if (CollectionUtils.isEmpty(pres)) {
-        res = res :+ node
+    LockUtils.using(readWriteLock.readLock()) {
+      for (node <- nodes) {
+        val pres = predecessors.get(node)
+        if (CollectionUtils.isEmpty(pres)) {
+          res += node
+        }
       }
     }
     res
   }
 
   @JsonIgnore
-  def isComplete: Boolean = nodes.isEmpty
+  def isComplete: Boolean = LockUtils.using(readWriteLock.readLock()) {
+    nodes.isEmpty
+  }
 
-  def complete(node: Node): Unit = {
+  def complete(node: Node): Unit = LockUtils.using(readWriteLock.writeLock()) {
     nodes.remove(node)
     predecessors.entries().removeIf(new Predicate[java.util.Map.Entry[Node, Node]]() {
       override def test(entry: util.Map.Entry[Node, Node]): Boolean = entry.getValue.equals(node)

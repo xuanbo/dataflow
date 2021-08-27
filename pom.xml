@@ -28,6 +28,7 @@
         <project.build.sourceEncoding>utf-8</project.build.sourceEncoding>
         <scala-maven-plugin.version>3.4.4</scala-maven-plugin.version>
         <maven-compiler-plugin.version>3.8.0</maven-compiler-plugin.version>
+        <maven-deploy-plugin.version>3.0.0-M1</maven-deploy-plugin.version>
         <maven-shade-plugin.version>3.2.4</maven-shade-plugin.version>
         <spring-boot.version>2.3.7.RELEASE</spring-boot.version>
         <rest-spring-boot-starter.version>1.5.0-SNAPSHOT</rest-spring-boot-starter.version>
@@ -37,79 +38,13 @@
         <spark.version>2.4.7</spark.version>
         <guava.version>30.0-jre</guava.version>
         <janino.version>3.0.8</janino.version>
-        <iotdb.version>0.10.0</iotdb.version>
+        <elasticsearch.version>7.2.0</elasticsearch.version>
+        <dameng.version>8.1.1.49</dameng.version>
+        <ojdbc8.version>12.2.0.1</ojdbc8.version>
+        <orai18n.version>12.1.0.2.0</orai18n.version>
+        <sqlserver.version>4.0</sqlserver.version>
+        <postgresql.version>42.2.18</postgresql.version>
     </properties>
-
-    <dependencies>
-        <!-- Scala -->
-        <dependency>
-            <groupId>org.scala-lang</groupId>
-            <artifactId>scala-library</artifactId>
-            <version>${scala.version}</version>
-            <scope>${scala-scope}</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.scala-lang</groupId>
-            <artifactId>scala-reflect</artifactId>
-            <version>${scala.version}</version>
-            <scope>${scala-scope}</scope>
-        </dependency>
-
-        <!-- Spark -->
-        <dependency>
-            <groupId>org.apache.spark</groupId>
-            <artifactId>spark-sql_2.11</artifactId>
-            <version>${spark.version}</version>
-            <scope>${spark-scope}</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>javax.validation</groupId>
-                    <artifactId>validation-api</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.google.code.gson</groupId>
-                    <artifactId>gson</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>javax.servlet</groupId>
-                    <artifactId>javax.servlet-api</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.spark</groupId>
-            <artifactId>spark-mllib_2.11</artifactId>
-            <version>${spark.version}</version>
-            <scope>${spark-scope}</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <scope>${slf4j-scope}</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-log4j12</artifactId>
-            <scope>${slf4j-scope}</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>jul-to-slf4j</artifactId>
-            <scope>${slf4j-scope}</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>jcl-over-slf4j</artifactId>
-            <scope>${slf4j-scope}</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
-            <scope>provided</scope>
-        </dependency>
-    </dependencies>
 
     <dependencyManagement>
         <dependencies>
@@ -142,77 +77,53 @@
 
     <profiles>
         <profile>
-            <id>dev</id>
+            <id>embed</id>
             <properties>
-                <scala-scope>compile</scala-scope>
                 <spark-scope>compile</spark-scope>
-                <slf4j-scope>compile</slf4j-scope>
             </properties>
             <activation>
                 <activeByDefault>true</activeByDefault>
             </activation>
         </profile>
         <profile>
-            <id>prod</id>
+            <id>cluster</id>
             <properties>
-                <scala-scope>provided</scala-scope>
                 <spark-scope>provided</spark-scope>
-                <slf4j-scope>provided</slf4j-scope>
             </properties>
         </profile>
     </profiles>
 
     <build>
-        <plugins>
-            <!-- This plugin compiles Scala files -->
-            <plugin>
-                <groupId>net.alchim31.maven</groupId>
-                <artifactId>scala-maven-plugin</artifactId>
-                <version>${scala-maven-plugin.version}</version>
-                <executions>
-                    <execution>
-                        <id>scala-compile-first</id>
-                        <phase>process-resources</phase>
-                        <goals>
-                            <goal>add-source</goal>
-                            <goal>compile</goal>
-                        </goals>
-                    </execution>
-                    <execution>
-                        <id>scala-test-compile</id>
-                        <phase>process-test-resources</phase>
-                        <goals>
-                            <goal>testCompile</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <!-- This plugin compiles Java files -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>${maven-compiler-plugin.version}</version>
-                <configuration>
-                    <source>${maven.compiler.source}</source>
-                    <target>${maven.compiler.target}</target>
-                    <encoding>${project.build.sourceEncoding}</encoding>
-                </configuration>
-                <executions>
-                    <execution>
-                        <phase>compile</phase>
-                        <goals>
-                            <goal>compile</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
+        <pluginManagement>
+            <plugins>
+                <!-- This plugin compiles Java files -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>${maven-compiler-plugin.version}</version>
+                    <configuration>
+                        <source>${maven.compiler.source}</source>
+                        <target>${maven.compiler.target}</target>
+                        <encoding>${project.build.sourceEncoding}</encoding>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <phase>compile</phase>
+                            <goals>
+                                <goal>compile</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+            </plugins>
+        </pluginManagement>
     </build>
 
     <modules>
         <module>dataflow-core</module>
         <module>dataflow-launch</module>
-        <module>dataflow-plugin</module>
+        <module>dataflow-sdk</module>
+        <module>dataflow-udf</module>
     </modules>
 
 </project>

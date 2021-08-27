@@ -14,8 +14,8 @@ class Properties extends mutable.LinkedHashMap[String, Any] {
 
   def getString(key: String, default: String): String = get(key) match {
     case Some(e) => e match {
-      case str: String => str
       case null => default
+      case str: String => str
       case _ => e.toString
     }
     case None => default
@@ -25,8 +25,8 @@ class Properties extends mutable.LinkedHashMap[String, Any] {
 
   def getInt(key: String, default: Int): Int = get(key) match {
     case Some(e) => e match {
-      case int: Int => int
       case null => default
+      case int: Int => int
       case _ => Integer.parseInt(e.toString)
     }
     case None => default

@@ -1,13 +1,15 @@
 package tk.fishfish.dataflow.entity;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import tk.fishfish.dataflow.entity.enums.ExecuteStatus;
 import org.springframework.format.annotation.DateTimeFormat;
-import tk.fishfish.mybatis.entity.Entity;
+import tk.fishfish.dataflow.entity.enums.ExecuteStatus;
+import tk.fishfish.persistence.Entity;
 
 import javax.persistence.Column;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 import java.util.Date;
+import java.util.List;
 
 /**
  * 执行
@@ -34,6 +36,9 @@ public class Execution extends Entity {
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private Date updateTime;
+
+    @Transient
+    private List<Task> tasks;
 
     public String getGraphId() {
         return graphId;
@@ -81,6 +86,14 @@ public class Execution extends Entity {
 
     public void setUpdateTime(Date updateTime) {
         this.updateTime = updateTime;
+    }
+
+    public List<Task> getTasks() {
+        return tasks;
+    }
+
+    public void setTasks(List<Task> tasks) {
+        this.tasks = tasks;
     }
 
 }

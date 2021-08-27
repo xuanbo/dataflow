@@ -5,7 +5,7 @@ import scala.annotation.tailrec
 /**
  * 字符串模板
  *
- * @see https://stackoverflow.com/questions/6110062/simple-string-template-replacement-in-scala-and-clojure
+ * @see [[https://stackoverflow.com/questions/6110062/simple-string-template-replacement-in-scala-and-clojure]]
  * @author 奔波儿灞
  * @version 1.0.0
  */

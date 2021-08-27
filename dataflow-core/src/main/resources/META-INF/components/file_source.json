@@ -1,0 +1,53 @@
+{
+  "group": "BASIC",
+  "name": "FILE_SOURCE",
+  "text": "文件输入源端",
+  "argument": {
+    "input": [
+      {
+        "name": "path",
+        "text": "输入的文件目录",
+        "type": "string",
+        "component": "input",
+        "required": true,
+        "remark": "/some/path/dir"
+      },
+      {
+        "name": "format",
+        "text": "文件格式",
+        "type": "string",
+        "component": "single-select",
+        "options": [
+          {
+            "label": "csv",
+            "value": "csv"
+          },
+          {
+            "label": "json",
+            "value": "json"
+          },
+          {
+            "label": "parquet",
+            "value": "parquet"
+          },
+          {
+            "label": "orc",
+            "value": "orc"
+          }
+        ],
+        "required": true,
+        "remark": "输入的文件格式类型"
+      }
+    ],
+    "output": [
+      {
+        "name": "table",
+        "text": "表",
+        "type": "string",
+        "component": "input",
+        "required": true,
+        "remark": "结果表"
+      }
+    ]
+  }
+}

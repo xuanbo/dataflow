@@ -1,23 +1,23 @@
 package tk.fishfish.dataflow.dag
 
+import org.apache.commons.lang3.StringUtils
 import org.apache.spark.sql.SparkSession
 import org.slf4j.{Logger, LoggerFactory}
 import org.springframework.scheduling.annotation.Async
-import tk.fishfish.dataflow.core.{Filter, Source, Target, Transformer}
+import tk.fishfish.dataflow
 import tk.fishfish.dataflow.entity.Execution
 import tk.fishfish.dataflow.entity.enums.ExecuteStatus
 import tk.fishfish.dataflow.exception.DagException
 import tk.fishfish.dataflow.service.{ExecutionService, TaskService}
-import tk.fishfish.dataflow.util.SparkUtils
-import tk.fishfish.dataflow.{core, entity}
+import tk.fishfish.dataflow.task.{Result, Task}
+import tk.fishfish.dataflow.util.HttpUtils
 import tk.fishfish.json.util.JSON
 
 import java.util.concurrent.atomic.AtomicLong
-import javax.validation.constraints.{NotBlank, NotNull}
 import scala.collection.mutable
 
 /**
- * DAG执行
+ * DAG执行器
  *
  * @author 奔波儿灞
  * @version 1.0.0
@@ -27,76 +27,42 @@ trait DagExecutor {
   @Async
   def run(param: ExecutionParam): Unit
 
+  def cancel(executionId: String): Unit
+
 }
 
-case class ExecutionParam(@NotBlank executionId: String, graphId: String, context: mutable.Map[String, Any], @NotNull graph: Graph)
-
-class DefaultDagExecutor(val spark: SparkSession, val tasks: Map[String, core.Task],
-                         val executionService: ExecutionService, val taskService: TaskService)
+abstract class AbstractDagExecutor(val spark: SparkSession,
+                                   val tasks: Map[String, Task],
+                                   val executionService: ExecutionService,
+                                   val taskService: TaskService)
   extends DagExecutor {
 
-  private val logger: Logger = LoggerFactory.getLogger(classOf[DefaultDagExecutor])
+  protected val logger: Logger = LoggerFactory.getLogger(getClass)
 
-  private[this] val autoIncrement: AtomicLong = new AtomicLong()
+  protected val autoIncrement: AtomicLong = new AtomicLong();
 
-  def run(param: ExecutionParam): Unit = {
-    logger.info("运行任务流: {}", param.executionId)
-    startExecution(param)
+  protected def initContext(param: ExecutionParam, namespace: String): Unit = {
     param.context += ("graphId" -> param.graphId)
     param.context += ("executionId" -> param.executionId)
-    val namespace = s"n_${autoIncrement.incrementAndGet()}"
-    val tables = mutable.Set[String]()
-    var status: ExecuteStatus = null
-    var message: String = null
-    try {
-      val dag = Dag(param.graph)
-      while (!dag.isComplete) {
-        val nodes = dag.poll()
-        for (node <- nodes) {
-          val taskId = startTask(param.executionId, node)
-          try {
-            node.argument.namespace = namespace
-            node.argument.context = param.context
-            runTask(node)
-            status = ExecuteStatus.SUCCESS
-          } catch {
-            case e: Exception =>
-              status = ExecuteStatus.ERROR
-              message = e.getMessage
-              throw e
-          } finally {
-            endTask(taskId, status, message)
-            dag.complete(node)
-          }
-        }
-      }
-    } catch {
-      case e: Exception => {
-        logger.warn(s"任务流运行失败: ${param.executionId}", e)
-        message = e.getMessage
-      }
-    } finally {
-      // 清理临时表
-      SparkUtils.cleanup(spark, namespace)
-      logger.info("任务流结束: {}", param.executionId)
-      endExecution(param.executionId, message)
-    }
+    param.context += ("namespace" -> namespace)
   }
 
-  private[this] def runTask(node: Node): Unit = {
+  protected def initNode(param: ExecutionParam, namespace: String, node: Node, taskId: String): Unit = {
+    node.argument.namespace = namespace
+    val ctxStr = JSON.write(param.context)
+    node.argument.context = JSON.read(ctxStr, classOf[mutable.Map[String, Any]])
+    node.argument.context += ("nodeId" -> node.id)
+    node.argument.context += ("taskId" -> taskId)
+  }
+
+  protected def runTask(node: Node): Result = {
     tasks.get(node.name) match {
-      case Some(task) => task match {
-        case source: Source => source.read(node.argument)
-        case transformer: Transformer => transformer.transform(node.argument)
-        case filter: Filter => filter.filter(node.argument)
-        case target: Target => target.write(node.argument)
-        case _ => throw new DagException(s"节点不支持的类型: ${node.name}")
-      }
+      case Some(task) => task.execute(node.argument)
       case None => throw new DagException(s"节点不支持的类型: ${node.name}")
     }
   }
 
-  private[this] def startExecution(param: ExecutionParam): Unit = {
+  protected def startExecution(param: ExecutionParam): Unit = {
     val execution = new Execution()
     execution.setId(param.executionId)
     execution.setGraphId(param.graphId)
@@ -105,8 +71,8 @@ class DefaultDagExecutor(val spark: SparkSession, val tasks: Map[String, core.Ta
     executionService.insertSelective(execution)
   }
 
-  private[this] def startTask(executionId: String, node: Node): String = {
-    val task = new entity.Task()
+  protected def startTask(executionId: String, node: Node): String = {
+    val task = new dataflow.entity.Task()
     task.setExecutionId(executionId)
     task.setNodeId(node.id)
     task.setNodeName(node.name)
@@ -116,15 +82,17 @@ class DefaultDagExecutor(val spark: SparkSession, val tasks: Map[String, core.Ta
     task.getId
   }
 
-  private[this] def endTask(taskId: String, status: ExecuteStatus, message: String): Unit = {
-    val task = new entity.Task()
+  protected def endTask(taskId: String, status: ExecuteStatus, message: String, result: Result): Unit = {
+    val task = new dataflow.entity.Task()
     task.setId(taskId)
     task.setStatus(status)
     task.setMessage(message)
+    Option(result).map(_.data).foreach(task.setData)
+    Option(result).map(_.numbers).foreach(task.setNumbers(_))
     taskService.updateSelective(task)
   }
 
-  private[this] def endExecution(executionId: String, message: String): Unit = {
+  protected def endExecution(executionId: String, message: String): Execution = {
     val execution = new Execution()
     execution.setId(executionId)
     val status = if (message == null) {
@@ -135,6 +103,18 @@ class DefaultDagExecutor(val spark: SparkSession, val tasks: Map[String, core.Ta
     execution.setStatus(status)
     execution.setMessage(message)
     executionService.updateSelective(execution)
+    execution
+  }
+
+  protected def doCallback(callback: String, execution: Execution): Unit = {
+    if (StringUtils.isBlank(callback)) {
+      return
+    }
+    try {
+      HttpUtils.post(callback, execution, classOf[String])
+    } catch {
+      case e: Exception => logger.warn("触发回调失败: {}", e.getMessage)
+    }
   }
 
 }

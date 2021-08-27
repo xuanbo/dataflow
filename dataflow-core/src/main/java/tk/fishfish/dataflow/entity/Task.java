@@ -1,9 +1,9 @@
 package tk.fishfish.dataflow.entity;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import tk.fishfish.dataflow.entity.enums.ExecuteStatus;
 import org.springframework.format.annotation.DateTimeFormat;
-import tk.fishfish.mybatis.entity.Entity;
+import tk.fishfish.dataflow.entity.enums.ExecuteStatus;
+import tk.fishfish.persistence.Entity;
 
 import javax.persistence.Column;
 import javax.persistence.Table;
@@ -30,6 +30,11 @@ public class Task extends Entity {
     private ExecuteStatus status;
 
     private String message;
+
+    @Column(name = "data")
+    private String data;
+
+    private Long numbers;
 
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
@@ -85,6 +90,22 @@ public class Task extends Entity {
 
     public void setMessage(String message) {
         this.message = message;
+    }
+
+    public String getData() {
+        return data;
+    }
+
+    public void setData(String data) {
+        this.data = data;
+    }
+
+    public Long getNumbers() {
+        return numbers;
+    }
+
+    public void setNumbers(Long numbers) {
+        this.numbers = numbers;
     }
 
     public Date getCreateTime() {

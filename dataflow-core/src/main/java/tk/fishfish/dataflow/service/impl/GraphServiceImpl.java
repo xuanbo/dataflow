@@ -1,13 +1,13 @@
 package tk.fishfish.dataflow.service.impl;
 
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
-import scala.collection.JavaConversions;
 import tk.fishfish.dataflow.dag.DagExecutor;
 import tk.fishfish.dataflow.dag.ExecutionParam;
 import tk.fishfish.dataflow.entity.Graph;
 import tk.fishfish.dataflow.service.GraphService;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+import scala.collection.JavaConversions;
 import tk.fishfish.json.util.JSON;
 import tk.fishfish.mybatis.service.impl.BaseServiceImpl;
 
@@ -44,19 +44,20 @@ public class GraphServiceImpl extends BaseServiceImpl<Graph> implements GraphSer
                 executionId,
                 graph.getId(),
                 JavaConversions.mapAsScalaMap(context),
-                JSON.read(graph.getContent(), tk.fishfish.dataflow.dag.Graph.class)
+                JSON.read(graph.getContent(), tk.fishfish.dataflow.dag.Graph.class),
+                null
         ));
     }
 
     @Override
-    protected void beforeInsert(Graph graph) {
+    public void beforeInsert(Graph graph) {
         if (graph.getCreateTime() == null) {
             graph.setCreateTime(new Date());
         }
     }
 
     @Override
-    protected void beforeUpdate(Graph graph) {
+    public void beforeUpdate(Graph graph) {
         if (graph.getUpdateTime() == null) {
             graph.setUpdateTime(new Date());
         }

@@ -1,0 +1,11 @@
+# 源端
+tk.fishfish.dataflow.task.source.DatabaseSource
+tk.fishfish.dataflow.task.source.FileSource
+# 目标端
+tk.fishfish.dataflow.task.sink.DatabaseSink
+tk.fishfish.dataflow.task.sink.FileSink
+# 转换
+tk.fishfish.dataflow.task.transformer.SqlTransformer
+# 脚本
+tk.fishfish.dataflow.task.script.Shell
+tk.fishfish.dataflow.task.script.SqlExecutor

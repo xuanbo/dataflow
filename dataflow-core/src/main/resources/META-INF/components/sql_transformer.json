@@ -1,0 +1,27 @@
+{
+  "group": "BASIC",
+  "name": "SQL_TRANSFORMER",
+  "text": "SQL转换",
+  "argument": {
+    "input": [
+      {
+        "name": "sql",
+        "text": "查询SQL语句",
+        "type": "string",
+        "component": "textarea",
+        "required": true,
+        "remark": "SQL查询语句"
+      }
+    ],
+    "output": [
+      {
+        "name": "table",
+        "text": "表",
+        "type": "string",
+        "component": "input",
+        "required": false,
+        "remark": "结果表，如果不填则结果集不注册到Spark表"
+      }
+    ]
+  }
+}

@@ -1,6 +1,13 @@
 ﻿.idea
 *.iml
 
-target
+dataflow-core/target
+dataflow-launch/target
+dataflow-sdk/target
+dataflow-udf/target
 
+shell-output
+spark-tmp
 spark-warehouse
+
+logs

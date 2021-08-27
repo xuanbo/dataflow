@@ -21,7 +21,7 @@
         </dependency>
         <dependency>
             <groupId>tk.fishfish</groupId>
-            <artifactId>dataflow-plugin</artifactId>
+            <artifactId>dataflow-udf</artifactId>
             <version>${project.version}</version>
         </dependency>
 
@@ -29,11 +29,31 @@
             <groupId>org.liquibase</groupId>
             <artifactId>liquibase-core</artifactId>
         </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+            <exclusions>
+                <!-- 用 spark 的 log4j 日志 -->
+                <exclusion>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-starter-logging</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
     </dependencies>
 
     <build>
-        <finalName>dataflow</finalName>
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-deploy-plugin</artifactId>
+                <version>${maven-deploy-plugin.version}</version>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
             <!-- This plugin adds all dependencies to fat JAR file during 'package' command -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

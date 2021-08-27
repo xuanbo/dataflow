@@ -17,14 +17,14 @@ import java.util.Date;
 public class TaskServiceImpl extends BaseServiceImpl<Task> implements TaskService {
 
     @Override
-    protected void beforeInsert(Task task) {
+    public void beforeInsert(Task task) {
         if (task.getCreateTime() == null) {
             task.setCreateTime(new Date());
         }
     }
 
     @Override
-    protected void beforeUpdate(Task task) {
+    public void beforeUpdate(Task task) {
         if (task.getUpdateTime() == null) {
             task.setUpdateTime(new Date());
         }

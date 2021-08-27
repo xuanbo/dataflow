@@ -1,8 +1,10 @@
 package tk.fishfish.dataflow.controller
 
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.web.bind.annotation.{PostMapping, RequestBody, RequestMapping, RestController}
+import org.springframework.web.bind.annotation.{PostMapping, RequestBody, RequestMapping, RequestParam, RestController}
 import tk.fishfish.dataflow.dag.{DagExecutor, ExecutionParam}
+
+import scala.collection.mutable
 
 /**
  * DAG接口
@@ -19,7 +21,15 @@ class DagController {
 
   @PostMapping(Array("/run"))
   def run(@RequestBody param: ExecutionParam): Unit = {
-    dagExecutor.run(param)
+    val executionParam = if (param.context == null) {
+      ExecutionParam(param.executionId, param.graphId, mutable.HashMap[String, Any](), param.graph, param.callback)
+    } else {
+      param
+    }
+    dagExecutor.run(executionParam)
   }
+
+  @PostMapping(Array("/cancel"))
+  def cancel(@RequestParam executionId: String): Unit = dagExecutor.cancel(executionId)
 
 }

@@ -4,11 +4,19 @@ server:
 spark:
   appName: dataflow
   master: local[*]
+  config:
+    spark.local.dir: spark-tmp
+    # 支持sql笛卡尔积，select * from t1, t2
+    spark.sql.crossJoin.enabled: true
+    # 开启自适应reduce、数据倾斜
+    spark.sql.adaptive.enabled: true
+    # Can not create the managed table ... already exists
+    spark.sql.legacy.allowCreatingManagedTableUsingNonemptyLocation: true
 
 spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/dataflow?serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=utf8
+    url: jdbc:mysql://127.0.0.1:3306/dataflow?serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=utf8
     username: root
     password: 123456
   liquibase:
@@ -25,15 +33,25 @@ mybatis:
     map-underscore-to-camel-case: true
   # 分⻚
   page-helper:
-    helper-dialect: mysql
+    helperDialect: mysql
     reasonable: "true"
     params: count=countSql
   # 通用mapper
   mapper:
     mappers:
       - tk.fishfish.mybatis.repository.Repository
-    not-empty: true
+    notEmpty: true
+    # mysql字段增加``
+    wrapKeyword: "`{0}`"
 
 logging:
   level:
-    tk.fishfish: INFO
+    root: INFO
+
+dataflow:
+  dag:
+    concurrent: true
+  shell:
+    output:
+      dir: shell-output
+      name: output.txt

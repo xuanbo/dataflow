@@ -1,0 +1,6 @@
+tk.fishfish.dataflow.database.source.MysqlSourceFactory
+tk.fishfish.dataflow.database.source.OracleSourceFactory
+tk.fishfish.dataflow.database.source.DmSourceFactory
+tk.fishfish.dataflow.database.source.EsSourceFactory
+tk.fishfish.dataflow.database.source.SqlServerSourceFactory
+tk.fishfish.dataflow.database.source.PostgreSourceFactory

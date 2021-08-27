@@ -2,51 +2,43 @@
 
 > 基于 Spark 任务流执行平台
 
-## 依赖
+## 设计
 
-- Scala 2.11.12
-- Spark 2.4.7
-- Spring Boot 2.3.7.RELEASE
+### 概念
 
-## 模块介绍
+dataflow 中的概念：
 
-```text
-├── dataflow-core        核心模块
-├── dataflow-launch      启动		
-├── dataflow-plugin      插件（组件）
-```
+- executionId
 
-## 快速开始
+  每次将 dag 任务提交到 dataflow 时会生成唯一执行 id
 
-- 修改 src/main/resources/application.yaml 配置文件
+- taskId
 
-  ```yaml
-  spring:
-    datasource:
-      driver-class-name: com.mysql.cj.jdbc.Driver
-      url: jdbc:mysql://localhost:3306/dataflow?serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=utf8
-      username: root
-      password: 123456
-  ```
+  在一次 dag 执行中，dag 中的每个 node 执行时都会生成唯一任务 id
 
-- 启动 src/main/resources/tk.fishfish.dataflow.Bootstrap 程序
+---
 
-- 部署（内嵌 Spark 服务，对于集群部署见集群说明）
+spark 中的概念：
 
-  打包（指定 dev 环境，会将 Spark 依赖打入 jar 包）：
+- job
 
-  ```shell
-  mvn clean package -Pdev -DskipTests
-  ```
+  spark 每次遇到 action 算子会提交一个 job
 
-  运行：
+- stage
 
-  ```shell
-  java -jar /some/path/dataflow-launch-1.0.0-SNAPSHOT.jar
-  ```
+  spark 将 job 划分为多个 stages 执行（每次遇到 shuffle 都会划分一个 stage）
 
+- task
 
-## 组件
+  stage 下的一个执行单元，每个 task 只处理一个 partition 上的数据
+
+--- 
+
+需要注意的是，dataflow 中的一个 task 会生成 spark 的一（多）个 job 去完成一个组件的操作。
+
+### 组件介绍
+
+### 组件
 
 组件定义如下：
 
@@ -66,128 +58,150 @@
 }
 ```
 
-- [组件介绍文档](./component.md)
-- [插件开发指北](./plugin.md)
+[组件介绍](./component-introduction.md)
 
-## DAG
+## 依赖
+
+- Scala 2.11.12
+- Spark 2.4.7
+- Spring Boot 2.3.7.RELEASE
+
+## 模块介绍
+
+```text
+├── dataflow-core        引擎
+├── dataflow-udf         Spark SQL自定义函数
+├── dataflow-sdk         SDK集成
+├── dataflow-launch      引擎启动
+```
+
+## 快速开始（嵌入式）
+
+### 配置
+
+修改 src/main/resources/application.yaml 配置文件
+
+```yaml
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://127.0.0.1:3306/dataflow?serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=utf8
+    username: root
+    password: 123456
+```
+
+### 本地启动
+
+- 启动 src/main/resources/k.fishfish.dataflow.Bootstrap 程序
+
+### 部署
+
+打包（指定 embed 环境，会将 Spark 依赖打入 jar 包）：
+
+```shell
+mvn clean package -Pembed -DskipTests
+```
+
+运行：
+
+```shell
+java -jar /some/path/dataflow-launch-1.0.0-SNAPSHOT.jar
+```
+
+### 计算
 
 将任务绘制成流程图，利用 DAG 算法进行节点运算。
 
-```text
-POST http://127.0.0.1:9090/v1/dag/run
+例如，如下将 test_user 表数据同步到 test_user_copy1 表中
+
+```curl
+curl --location --request POST 'http://127.0.0.1:9090/v1/dag/run' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+    "executionId": "1",
+    "context": {},
+    "graph": {
+        "nodes": [
+            {
+                "id": "1",
+                "name": "DATABASE_SOURCE",
+                "text": "读",
+                "argument": {
+                    "input": {
+                        "url": "jdbc:mysql://127.0.0.1:3306/test?serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=utf8",
+                        "user": "root",
+                        "password": "123456",
+                        "sql": "select * from test_user"
+                    },
+                    "output": {
+                        "table": "t1"
+                    }
+                }
+            },
+            {
+                "id": "2",
+                "name": "SQL_TRANSFORMER",
+                "text": "转换",
+                "argument": {
+                    "input": {
+                        "sql": "select * from {namespace}.t1"
+                    },
+                    "output": {
+                        "table": "t2"
+                    }
+                }
+            },
+            {
+                "id": "3",
+                "name": "DATABASE_SINK",
+                "text": "写",
+                "argument": {
+                    "input": {
+                        "table": "t2"
+                    },
+                    "output": {
+                        "url": "jdbc:mysql://127.0.0.1:3306/test?serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=utf8",
+                        "user": "root",
+                        "password": "123456",
+                        "table": "test_user_copy",
+                        "mode": "update"
+                    }
+                }
+            }
+        ],
+        "edges": [
+            {
+                "from": "1",
+                "to": "2"
+            },
+            {
+                "from": "2",
+                "to": "3"
+            }
+        ]
+    },
+    "callback": "http://127.0.0.1:8080/callback"
+}'
 ```
 
-```json5
-{
-  // 执行ID
-  "executionId": "1",
-  // 上下文
-  "context": {},
-  // DAG流程图
-  "graph": {
-    "nodes": [
-      {
-        "id": "1",
-        "name": "SOURCE_SQL",
-        "text": "读",
-        "argument": {
-          "input": {
-            "url": "jdbc:iotdb://127.0.0.1:6667/",
-            "user": "root",
-            "password": "root",
-            "sql": "select * from root.demo"
-          },
-          "output": {
-            "table": "demo1"
-          }
-        }
-      },
-      {
-        "id": "2",
-        "name": "TRANSFORMER_SQL",
-        "text": "转换",
-        "argument": {
-          "input": {
-            "table": "demo1",
-            "select": "Time AS time, `root.demo.temperature` AS temperature, `root.demo.hardware` AS hardware"
-          },
-          "output": {
-            "table": "demo2"
-          }
-        }
-      },
-      {
-        "id": "3",
-        "name": "TRANSFORMER_SQL_CONTEXT",
-        "text": "上下文",
-        "argument": {
-          "input": {
-            "table": "demo2",
-            "contexts": [
-              {
-                "name": "executionId",
-                "alias": "_executionId"
-              }
-            ]
-          },
-          "output": {
-            "table": "demo3"
-          }
-        }
-      },
-      {
-        "id": "4",
-        "name": "TARGET_LOG",
-        "text": "写",
-        "argument": {
-          "input": {
-            "table": "demo3"
-          },
-          "output": {}
-        }
-      }
-    ],
-    "edges": [
-      {
-        "from": "1",
-        "to": "2"
-      },
-      {
-        "from": "2",
-        "to": "3"
-      },
-      {
-        "from": "3",
-        "to": "4"
-      }
-    ]
-  }
-}
-```
+## 性能
 
-## 集群
+### MySQL
 
-![cluster](./docs/cluster.png)
+#### MySQL读
 
-默认情况下，Profile dev 为开发测试环境。通过 prod 开启集群环境支持。
+1. 底层使用流式查询，防止数据全部查询到客户端导致OOM
+1. 支持切片加载（分区字段需要是数值类型），并发抽数，提升性能
 
-打包：
+具体表现，410w数据量11分钟读取完毕，约6000/s的读取性能（测试环境测试结果，依赖具体机器性能），整个过程中内存占用平稳
 
-```shell
-mvn clean package -Pprod -DskipTests
-```
+![MySQL读](docs/1.png)
 
-此时，jar 中不包含 spark 相关的依赖，我们通过 spark-submit 将程序部署到集群（standalone）：
+#### MySQL写
 
-```shell
-./bin/spark-submit \
- --master spark://spark-master:7077 \
- --deploy-mode client \
- --class tk.fishfish.dataflow.Bootstrap \
- --conf spark.driver.userClassPathFirst=true \
- /some/path/dataflow-launch-1.0.0-SNAPSHOT.jar
-```
+1. 底层使用批量写入
+1. 支持数据分区后，并发写入
 
-对于 yarn 环境则将 master 修改为 yarn 即可。
+具体表现，410w数据量6分钟半写入完毕，约10000/s的写入性能（本地测试结果，依赖具体机器性能），整个过程中内存占用平稳
 
-注意：deploy-mode 为 client 是为了固定 driver 端，方便作为 API 服务访问。
+![MySQL写](docs/2.png)

@@ -2,7 +2,7 @@ package tk.fishfish.dataflow.entity.enums;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import tk.fishfish.mybatis.enums.EnumType;
+import tk.fishfish.enums.EnumType;
 
 /**
  * 组件分组
@@ -14,11 +14,11 @@ import tk.fishfish.mybatis.enums.EnumType;
 @RequiredArgsConstructor
 public enum ComponentGroup implements EnumType {
 
-    BASIC("基础", "0"),
+    OTHER("其他", "0"),
 
-    ALGORITHM("算法", "1"),
+    BASIC("基础", "1"),
 
-    OTHER("其他", "2"),
+    ALGORITHM("算法", "2"),
 
     ;
 

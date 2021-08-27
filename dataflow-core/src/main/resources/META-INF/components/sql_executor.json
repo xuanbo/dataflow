@@ -1,0 +1,43 @@
+{
+  "group": "BASIC",
+  "name": "SQL_EXECUTOR",
+  "text": "SQL脚本执行",
+  "argument": {
+    "input": [
+      {
+        "name": "url",
+        "text": "JDBC 连接",
+        "type": "string",
+        "component": "input",
+        "required": true,
+        "remark": "JDBC 连接\r\njdbc:mysql://127.0.0.1:3306/test\r\njdbc:es://http://127.0.0.1:9200\r\njdbc:dm://127.0.0.1:5236\r\njdbc:sqlserver://127.0.0.1:1433;DatabaseName=testdb\r\njdbc:oracle:thin:@127.0.0.1:1521:testdb\r\njdbc:postgresql://127.0.0.1:5432/postgres"
+      },
+      {
+        "name": "user",
+        "text": "JDBC 用户名",
+        "type": "string",
+        "component": "input",
+        "required": false,
+        "remark": "JDBC 用户名"
+      },
+      {
+        "name": "password",
+        "text": "JDBC 密码",
+        "type": "string",
+        "component": "password",
+        "required": false,
+        "remark": "JDBC 密码"
+      },
+      {
+        "name": "sql",
+        "text": "SQL 执行语句",
+        "type": "string",
+        "component": "textarea",
+        "required": true,
+        "remark": "SQL 执行语句，可执行多条 SQL 执行（用分号隔开）"
+      }
+    ],
+    "output": [
+    ]
+  }
+}

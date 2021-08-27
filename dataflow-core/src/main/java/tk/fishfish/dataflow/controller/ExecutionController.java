@@ -1,6 +1,8 @@
 package tk.fishfish.dataflow.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -28,6 +30,11 @@ public class ExecutionController extends BaseController<Execution> {
     @PostMapping("/page")
     public Page<Execution> page(@RequestBody Query<ExecutionCondition> query) {
         return executionService.page(query.getCondition(), query.getPage());
+    }
+
+    @GetMapping("/{id}/detail")
+    public Execution detail(@PathVariable String id) {
+        return executionService.detail(id);
     }
 
 }

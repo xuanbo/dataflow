@@ -1,0 +1,53 @@
+{
+  "group": "BASIC",
+  "name": "FILE_SINK",
+  "text": "文件输出目标端",
+  "argument": {
+    "input": [
+      {
+        "name": "table",
+        "text": "表",
+        "type": "string",
+        "component": "input",
+        "required": true,
+        "remark": "读取表"
+      }
+    ],
+    "output": [
+      {
+        "name": "path",
+        "text": "输出的文件目录",
+        "type": "string",
+        "component": "input",
+        "required": true,
+        "remark": "/some/path/dir"
+      },
+      {
+        "name": "format",
+        "text": "文件格式",
+        "type": "string",
+        "component": "single-select",
+        "options": [
+          {
+            "label": "csv",
+            "value": "csv"
+          },
+          {
+            "label": "json",
+            "value": "json"
+          },
+          {
+            "label": "parquet",
+            "value": "parquet"
+          },
+          {
+            "label": "orc",
+            "value": "orc"
+          }
+        ],
+        "required": true,
+        "remark": "输出的文件格式类型"
+      }
+    ]
+  }
+}

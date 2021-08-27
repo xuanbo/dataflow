@@ -1,0 +1,6 @@
+tk.fishfish.dataflow.database.sink.MysqlSinkFactory
+tk.fishfish.dataflow.database.sink.OracleSinkFactory
+tk.fishfish.dataflow.database.sink.DmSinkFactory
+tk.fishfish.dataflow.database.sink.EsSinkFactory
+tk.fishfish.dataflow.database.sink.SqlServerSinkFactory
+tk.fishfish.dataflow.database.sink.PostgreSinkFactory

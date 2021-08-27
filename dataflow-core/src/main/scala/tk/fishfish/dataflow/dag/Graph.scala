@@ -1,7 +1,7 @@
 package tk.fishfish.dataflow.dag
 
 import org.apache.commons.lang3.StringUtils
-import tk.fishfish.dataflow.core.Argument
+import tk.fishfish.dataflow.task.Argument
 
 import java.util.Objects
 
